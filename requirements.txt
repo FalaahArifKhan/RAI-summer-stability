@@ -1,0 +1,11 @@
+folktables
+sklearn-utils
+imblearn
+xgboost
+statsmodels
+numpy==1.19.2
+matplotlib
+pandas
+scikit-learn
+seaborn
+plotly
