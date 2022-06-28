@@ -34,7 +34,8 @@ def validate_model(model, x, y, params, n_folds, samples_per_fold):
                                },
                                refit="F1_Score",
                                n_jobs=-1,
-                               cv=folds_iterator(n_folds, samples_per_fold, x.shape[0]))
+                               cv=folds_iterator(n_folds, samples_per_fold, x.shape[0]),
+                               verbose=10)
     grid_search.fit(x, y.values.ravel())
     best_index = grid_search.best_index_
 
@@ -67,12 +68,12 @@ def test_evaluation(cur_best_model, model_name, cur_best_params,
         print()
         print(classification_report(cur_y_test, cur_model_pred, digits=3))
 
-        if show_plots:
-            # plot the confusion matrix
-            cm = confusion_matrix(cur_y_test, cur_model_pred, labels=cur_best_model.classes_)
-            disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["Employed", "Not Employed"])
-            disp.plot()
-            plt.show()
+    if show_plots:
+        # plot the confusion matrix
+        cm = confusion_matrix(cur_y_test, cur_model_pred, labels=cur_best_model.classes_)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["Employed", "Not Employed"])
+        disp.plot()
+        plt.show()
     return test_f1_score, test_accuracy, cur_model_pred
 
 
