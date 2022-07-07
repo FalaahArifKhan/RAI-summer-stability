@@ -14,8 +14,6 @@ def sns_set_size(height, width):
 
 
 def plot_column_grouped_by_race(data, plot_column):
-    sns_set_size(height=18, width=15)
-
     fig = plt.figure()
     gs0 = matplotlib.gridspec.GridSpec(ncols=3, nrows=3, figure=fig)
     race_names = ['White alone', 'Black or African American alone', 'American Indian alone',
@@ -29,7 +27,6 @@ def plot_column_grouped_by_race(data, plot_column):
         sns.distplot(data[data['RAC1P'] == i + 1][plot_column], ax=ax)
 
     plt.show()
-    set_default_plot_properties()
 
 
 def null_scenario_analysis(data, corrupted_data, target_col, condition_col, special_values):
