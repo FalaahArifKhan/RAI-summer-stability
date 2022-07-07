@@ -50,10 +50,10 @@ def nulls_simulator(data, target_col, condition_col, special_values, fraction, n
     Description: simulate nulls for the target column in the dataset based on the condition column and its special values.
 
     Input:
-    :param data: a dataset, in which nulls values should be simulated
+    :param data: a pandas dataframe, in which nulls values should be simulated
     :param target_col: a column in the dataset, in which nulls should be placed
     :param condition_col: a column in the dataset based on which null location should be identified
-    :param special_values: special values for the condition column; special_values and condition_col state the condition,
+    :param special_values: list of special values for the condition column; special_values and condition_col state the condition,
         where nulls should be placed
     :param fraction: float in range [0.0, 1.0], fraction of nulls, which should be placed based on the condition
     :param nan_value: a value, which should be used as null to be placed in the dataset

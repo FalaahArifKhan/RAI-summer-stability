@@ -3,6 +3,11 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
+plt.style.use('mpl20')
+matplotlib.rcParams['figure.dpi'] = 100
+sns.set(rc={'figure.figsize':(12, 12)})
+
+
 def set_default_plot_properties():
     plt.style.use('mpl20')
     matplotlib.rcParams['figure.dpi'] = 100
@@ -15,10 +20,10 @@ def sns_set_size(height, width):
 
 def plot_column_grouped_by_race(data, plot_column):
     fig = plt.figure()
-    gs0 = matplotlib.gridspec.GridSpec(ncols=3, nrows=3, figure=fig)
+    gs0 = matplotlib.gridspec.GridSpec(ncols=3, nrows=3, figure=fig, wspace=0.5, hspace=0.5)
     race_names = ['White alone', 'Black or African American alone', 'American Indian alone',
                   'Alaska Native alone', 'American Indian', 'Asian alone',
-                  'Hawaiian and Other Pacific Islander alone', 'Some Other Race alone', 'Two or More Races']
+                  'Hawaiian and Pacific Islander', 'Some Other Race alone', 'Two or More Races']
 
     for i in range(len(race_names)):
         n_row, n_col = divmod(i, 3)
