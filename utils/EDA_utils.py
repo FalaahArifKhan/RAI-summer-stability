@@ -55,3 +55,17 @@ def null_scenario_analysis(data, corrupted_data, target_col, condition_col, spec
     plot_column_grouped_by_race(data, plot_column)
     print(f'\n\n\nPlot {plot_column} column Split by Race [After Corruption]')
     plot_column_grouped_by_race(corrupted_data[~corrupted_data[target_col].isnull()], plot_column)
+
+
+def imputed_nulls_analysis(imputed_data, corrupted_data, target_col):
+    print(f"Number of nulls in {target_col} column in the corrupted dataframe: ", corrupted_data[target_col].isnull().sum())
+    print(f"Number of nulls in {target_col} column in the imputed dataframe: ", imputed_data[target_col].isnull().sum())
+
+    # Print density plots for the target column for corrupted and imputed dataframes
+    plt.figure()
+    sns.displot(corrupted_data[target_col]).set(title=f'Density of Corrupted {target_col} Column')
+    plt.show()
+
+    plt.figure()
+    sns.displot(imputed_data[target_col]).set(title=f'Density of Imputed {target_col} Column')
+    plt.show()

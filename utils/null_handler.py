@@ -1,9 +1,13 @@
 import pandas as pd
 import numpy as np
 
+from scipy import stats
+from sklearn.experimental import enable_iterative_imputer
+from sklearn.impute import IterativeImputer
 
-def handle_df_nulls(data, how, column_names):
-    '''
+
+def handle_df_nulls(input_data, how, column_names):
+    """
     Description: Processes the null values in the dataset
     Input:
     data: dataframe with missing values
@@ -15,19 +19,41 @@ def handle_df_nulls(data, how, column_names):
 
     Output:
     dataframe with processed nulls
-    '''
-    if how == 'special':
-        vals = {}
-        for col in column_names:
-            vals[col] = decide_special_category(data[col].values)
-        data.fillna(value=vals, inplace=True)
-    
+    """
+    data = input_data.copy(deep=True)
+
     if how == 'drop-column':
         data.drop(columns=column_names, inplace=True)
-
-    if how == 'drop-rows':
+    elif how == 'drop-rows':
         data.dropna(subset=column_names, inplace=True)
-        
+    elif how == 'predict-by-sklearn':
+        # Setting the random_state argument for reproducibility
+        imputer = IterativeImputer(random_state=42)
+        imputed = imputer.fit_transform(data)
+        data = pd.DataFrame(imputed, columns=data.columns)
+    else:
+        get_impute_value = None
+        if how == 'special':
+            get_impute_value = decide_special_category
+        elif 'impute-by-mode' in how:
+            get_impute_value = find_column_mode
+        elif 'impute-by-mean' in how:
+            get_impute_value = find_column_mean
+        elif 'impute-by-median' in how:
+            get_impute_value = find_column_median
+
+        vals = {}
+        for col in column_names:
+            filtered_column = data[~data[col].isnull()][col].copy(deep=True)
+            if 'trimmed' in how:
+                k_percent = 10
+                reduce_n_rows = int(filtered_column.shape[0] / 100 * k_percent)
+                filtered_column.sort_values(ascending=False, inplace=True)
+                filtered_column = filtered_column[reduce_n_rows: -reduce_n_rows]
+
+            vals[col] = get_impute_value(filtered_column.values)
+        print("Impute values: ", vals)
+        data.fillna(value=vals, inplace=True)
     return data
 
 
@@ -75,10 +101,23 @@ def nulls_simulator(data, target_col, condition_col, special_values, fraction, n
 
 
 def decide_special_category(data):
-    '''
+    """
     Description: Decides which value to designate as a special value, based on the values already in the data
-    '''
+    """
     if 0 not in data:
         return 0
     else:
         return max(data) + 1
+
+
+def find_column_mode(data):
+    result = stats.mode(data)
+    return result.mode[0]
+
+
+def find_column_mean(data):
+    return np.mean(data)
+
+
+def find_column_median(data):
+    return np.median(data)
