@@ -15,6 +15,16 @@ def handle_df_nulls(input_data, how, column_names):
             - 'special': corresponds to 'not applicable' scenario, designates null values as their own special category
             - 'drop-column' : removes the column with nulls from the dataset
             - 'drop-rows' : removes all the rows with the nulls values from the dataset
+            - 'predict-by-sklearn' : predict values to impute nulls based on the features in the rows; used for multivariate data
+            - 'impute-by-mode' : impute nulls by mode of the column values without nulls
+            - 'impute-by-mode-trimmed' : the same as 'impute-by-mode', but the column is filtered from nulls,
+            sorted in descending order, and top and bottom k% are removed from it. After that 'impute-by-mode' logic is applied
+            - 'impute-by-mean' : impute nulls by mean of the column values without nulls
+            - 'impute-by-mean-trimmed' : the same as 'impute-by-mean', but the column is filtered from nulls,
+            sorted in descending order, and top and bottom k% are removed from it. After that 'impute-by-mean' logic is applied
+            - 'impute-by-median' : impute nulls by median of the column values without nulls
+            - 'impute-by-median-trimmed' : the same as 'impute-by-median', but the column is filtered from nulls,
+            sorted in descending order, and top and bottom k% are removed from it. After that 'impute-by-median' logic is applied
     column-names: list of column names, for which the particular techniques needs to be applied
 
     Output:
