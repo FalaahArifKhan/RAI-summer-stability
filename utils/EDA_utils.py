@@ -34,7 +34,8 @@ def plot_column_grouped_by_race(data, plot_column):
     plt.show()
 
 
-def null_scenario_analysis(data, corrupted_data, target_col, condition_col, special_values):
+def null_scenario_analysis(data, corrupted_data, target_col, condition_col, special_values,
+                           print_plots_grouped_by_race=True):
     # Count of nulls
     print(f'Count of nulls for {target_col} column: {corrupted_data[target_col].isnull().sum()}')
     print(f'Count of all records in {target_col} column: {data[target_col].count()}')
@@ -49,12 +50,13 @@ def null_scenario_analysis(data, corrupted_data, target_col, condition_col, spec
     sns.displot(corrupted_data[target_col]).set(title=f'Density of {target_col} Column After Corruption')
     plt.show()
 
-    # Print density plots for AGEP split by race before and after the corruption
-    plot_column = 'AGEP'
-    print(f'Plot {plot_column} column Split by Race [Before Corruption]')
-    plot_column_grouped_by_race(data, plot_column)
-    print(f'\n\n\nPlot {plot_column} column Split by Race [After Corruption]')
-    plot_column_grouped_by_race(corrupted_data[~corrupted_data[target_col].isnull()], plot_column)
+    if print_plots_grouped_by_race:
+        # Print density plots for AGEP split by race before and after the corruption
+        plot_column = 'AGEP'
+        print(f'Plot {plot_column} column Split by Race [Before Corruption]')
+        plot_column_grouped_by_race(data, plot_column)
+        print(f'\n\n\nPlot {plot_column} column Split by Race [After Corruption]')
+        plot_column_grouped_by_race(corrupted_data[~corrupted_data[target_col].isnull()], plot_column)
 
 
 def imputed_nulls_analysis(imputed_data, corrupted_data, target_col):
