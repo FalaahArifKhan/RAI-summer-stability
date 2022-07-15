@@ -3,11 +3,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
-plt.style.use('mpl20')
-matplotlib.rcParams['figure.dpi'] = 100
-sns.set(rc={'figure.figsize':(12, 12)})
-
-
 def set_default_plot_properties():
     plt.style.use('mpl20')
     matplotlib.rcParams['figure.dpi'] = 100

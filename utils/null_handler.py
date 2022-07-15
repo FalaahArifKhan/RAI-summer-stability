@@ -33,7 +33,7 @@ def handle_df_nulls(input_data, how, column_names):
     data = input_data.copy(deep=True)
 
     if how == 'drop-column':
-        data.drop(columns=column_names, inplace=True)
+        data.drop(columns=column_names,  axis=1, inplace=True)
     elif how == 'drop-rows':
         data.dropna(subset=column_names, inplace=True)
     elif how == 'predict-by-sklearn':
