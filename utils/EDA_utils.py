@@ -62,10 +62,10 @@ def imputed_nulls_analysis(real_data, imputed_data, corrupted_data, target_col):
     f, ax = plt.subplots(1, 3, figsize=(12, 4), sharey=True)
     sns.despine(left=True)
 
-    sns.histplot(data=corrupted_data[target_col], kde=True, stat='density', color='b', ax=ax[0])
+    sns.histplot(data=corrupted_data[target_col], kde=True, color='b', ax=ax[0])
     ax[0].set(title=f'Density of Corrupted {target_col} Column')
-    sns.histplot(data=imputed_data[target_col], kde=True, stat='density', color='m', ax=ax[1])
+    sns.histplot(data=imputed_data[target_col], kde=True, color='m', ax=ax[1])
     ax[1].set(title=f'Density of Imputed {target_col} Column')
-    sns.histplot(data=real_data[target_col], kde=True, stat='density', color='g', ax=ax[2])
+    sns.histplot(data=real_data[target_col], kde=True, color='g', ax=ax[2])
     ax[2].set(title=f'Density of Real {target_col} Column')
     plt.show()

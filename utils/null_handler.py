@@ -37,10 +37,17 @@ def handle_df_nulls(input_data, how, column_names, condition_column=None):
     elif how == 'drop-rows':
         data.dropna(subset=column_names, inplace=True)
     elif how == 'predict-by-sklearn':
+        if len(column_names) > 1:
+            print(f"\n\nERROR: {how} technique does not work with more than one column.\n\n")
+            return data
+
         # Setting the random_state argument for reproducibility
-        imputer = IterativeImputer(random_state=42)
+        imputer = IterativeImputer(random_state=42,
+                                   min_value=input_data[column_names[0]].min(),
+                                   max_value=input_data[column_names[0]].max())
         imputed = imputer.fit_transform(data)
         data = pd.DataFrame(imputed, columns=data.columns)
+        data = data[column_names].round()
     else:
         get_impute_value = None
         if how == 'special':
@@ -52,46 +59,64 @@ def handle_df_nulls(input_data, how, column_names, condition_column=None):
         elif 'impute-by-median' in how:
             get_impute_value = find_column_median
 
-        vals = {}
-        for col in column_names:
-            if condition_column:
-                filtered_df = data[~data[col].isnull()][[col, condition_column]].copy(deep=True)
-            else:
+        if 'conditional' in how:
+            data = apply_conditional_technique(data, column_names, condition_column, how, get_impute_value)
+        else:
+            vals = {}
+            for col in column_names:
                 filtered_df = data[~data[col].isnull()][[col]].copy(deep=True)
-            if 'trimmed' in how:
-                k_percent = 10
-                reduce_n_rows = int(filtered_df.shape[0] / 100 * k_percent)
-                filtered_df.sort_values(by=[col], ascending=False, inplace=True)
-                filtered_df = filtered_df[reduce_n_rows: -reduce_n_rows]
+                if 'trimmed' in how:
+                    k_percent = 10
+                    reduce_n_rows = int(filtered_df.shape[0] / 100 * k_percent)
+                    filtered_df.sort_values(by=[col], ascending=False, inplace=True)
+                    filtered_df = filtered_df[reduce_n_rows: -reduce_n_rows]
 
-            if 'conditional' in how and col != condition_column:
-                if condition_column == 'AGEP':
-                    threshold_age = 40
-                    fillna_val_less = get_impute_value(filtered_df[filtered_df[condition_column] < threshold_age][col].values)
-                    fillna_val_more = get_impute_value(filtered_df[filtered_df[condition_column] >= threshold_age][col].values)
-                    for idx, fillna_val in enumerate(fillna_val_less, fillna_val_more):
-                        sign = "<" if idx == 0 else ">="
-                        print(f"Impute {col} with value {fillna_val}, where {condition_column} {sign} {threshold_age}")
-                        data[col] = data.groupby(condition_column)[col].transform(lambda x: x.fillna(fillna_val))
-                else:
-                    mapping_dict = dict()
-                    for val in filtered_df[condition_column].unique():
-                        fillna_val = get_impute_value(filtered_df[filtered_df[condition_column] == val][col].values)
-                        print(f"Impute {col} with value {fillna_val}, where {condition_column} == {val}")
-                        mapping_dict[val] = fillna_val
-
-                    missing_mask = data[col].isna()
-                    data.loc[missing_mask, col] = data.loc[missing_mask, condition_column].map(mapping_dict)
-            else:
-                if col == condition_column:
-                    print(f"\n\n\nERROR: a target column from column_names list can not be equal to conditional column. "
-                          f"Skip {how} technique for {col} column\n\n\n")
-                else:
-                    vals[col] = get_impute_value(filtered_df[col].values)
-        if len(vals) > 0:
+                vals[col] = get_impute_value(filtered_df[col].values)
             print("Impute values: ", vals)
             data.fillna(value=vals, inplace=True)
     return data
+
+
+def apply_conditional_technique(data, column_names, condition_column, how, get_impute_value):
+    for col in column_names:
+        filtered_df = data[~data[col].isnull()][[col, condition_column]].copy(deep=True)
+        if col == condition_column:
+            print(f"\n\n\nERROR: a target column from column_names list can not be equal to conditional column. "
+                  f"Skip {how} technique for {col} column\n\n\n")
+            continue
+
+        if condition_column == 'AGEP':
+            threshold_age = 40
+            fillna_val_less = get_impute_value(filtered_df[filtered_df[condition_column] < threshold_age][col].values)
+            fillna_val_more = get_impute_value(filtered_df[filtered_df[condition_column] >= threshold_age][col].values)
+            for idx, fillna_val in enumerate(fillna_val_less, fillna_val_more):
+                sign = "<" if idx == 0 else ">="
+                print(f"Impute {col} with value {fillna_val}, where {condition_column} {sign} {threshold_age}")
+                data[col] = data.groupby(condition_column)[col].transform(lambda x: x.fillna(fillna_val))
+        else:
+            mapping_dict = dict()
+            for val in filtered_df[condition_column].unique():
+                fillna_val = get_impute_value(filtered_df[filtered_df[condition_column] == val][col].values)
+                print(f"Impute {col} with value {fillna_val}, where {condition_column} == {val}")
+                mapping_dict[val] = fillna_val
+
+            missing_mask = data[col].isna()
+            data.loc[missing_mask, col] = data.loc[missing_mask, condition_column].map(mapping_dict)
+    return data
+
+
+def initially_handle_nulls(X_data, missing):
+    handle_nulls = {
+        'special': missing,
+    }
+    # Checking dataset shape before handling nulls
+    print("Dataset shape before handling nulls: ", X_data.shape, X_data.columns)
+
+    for how_to in handle_nulls.keys():
+        X_data = handle_df_nulls(X_data, how_to, handle_nulls[how_to])
+    # Checking dataset shape after handling nulls
+    print("Dataset shape after handling nulls: ", X_data.shape, X_data.columns)
+    return X_data
 
 
 def get_sample_rows(data, target_col, fraction):
@@ -153,8 +178,8 @@ def find_column_mode(data):
 
 
 def find_column_mean(data):
-    return np.mean(data).round
+    return np.mean(data).round()
 
 
 def find_column_median(data):
-    return np.median(data).round
+    return np.median(data).round()
