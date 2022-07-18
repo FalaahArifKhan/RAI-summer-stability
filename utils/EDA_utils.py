@@ -59,10 +59,28 @@ def imputed_nulls_analysis(imputed_data, corrupted_data, target_col):
     print(f"Number of nulls in {target_col} column in the imputed dataframe: ", imputed_data[target_col].isnull().sum())
 
     # Print density plots for the target column for corrupted and imputed dataframes
-    plt.figure()
-    sns.displot(corrupted_data[target_col]).set(title=f'Density of Corrupted {target_col} Column')
-    plt.show()
 
-    plt.figure()
-    sns.displot(imputed_data[target_col]).set(title=f'Density of Imputed {target_col} Column')
+    # plt.figure()
+    # sns.displot(corrupted_data[target_col]).set(title=f'Density of Corrupted {target_col} Column')
+    # plt.show()
+    #
+    # plt.figure()
+    # sns.displot(imputed_data[target_col]).set(title=f'Density of Imputed {target_col} Column')
+    # plt.show()
+
+    # fig, ax = plt.subplots(1, 2, sharey=True)
+    # # sns.displot(data=corrupted_data[target_col], ax=ax[0]).set(title=f'Density of Corrupted {target_col} Column')
+    # # sns.displot(data=imputed_data[target_col], ax=ax[1]).set(title=f'Density of Imputed {target_col} Column')
+    # sns.displot(data=corrupted_data[target_col], ax=ax[0])
+    # sns.displot(data=imputed_data[target_col], ax=ax[1])
+    # fig.show()
+
+    f, ax = plt.subplots(1, 2, figsize=(8, 4), sharey=True)
+    sns.despine(left=True)
+
+    # sns.displot(data=corrupted_data[target_col], color='b', ax=ax, row_order=0, col_order=0)
+    # sns.displot(data=imputed_data[target_col], color='m', ax=ax, row_order=0, col_order=1)
+    sns.histplot(data=corrupted_data[target_col], kde=True, stat='density', color='b', ax=ax[0])
+    sns.histplot(data=imputed_data[target_col], kde=True, stat='density', color='m', ax=ax[1])
+    # plt.tight_layout()
     plt.show()
