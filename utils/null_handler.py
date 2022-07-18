@@ -6,7 +6,7 @@ from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 
 
-def handle_df_nulls(input_data, how, condition_column, column_names):
+def handle_df_nulls(input_data, how, column_names, condition_column=None):
     """
     Description: Processes the null values in the dataset
     Input:
@@ -54,7 +54,10 @@ def handle_df_nulls(input_data, how, condition_column, column_names):
 
         vals = {}
         for col in column_names:
-            filtered_df = data[~data[col].isnull()][[col, condition_column]].copy(deep=True)
+            if condition_column:
+                filtered_df = data[~data[col].isnull()][[col, condition_column]].copy(deep=True)
+            else:
+                filtered_df = data[~data[col].isnull()][[col]].copy(deep=True)
             if 'trimmed' in how:
                 k_percent = 10
                 reduce_n_rows = int(filtered_df.shape[0] / 100 * k_percent)
@@ -71,11 +74,6 @@ def handle_df_nulls(input_data, how, condition_column, column_names):
                         print(f"Impute {col} with value {fillna_val}, where {condition_column} {sign} {threshold_age}")
                         data[col] = data.groupby(condition_column)[col].transform(lambda x: x.fillna(fillna_val))
                 else:
-                    # for val in filtered_df[condition_column].unique():
-                    #     fillna_val = get_impute_value(filtered_df[filtered_df[condition_column] == val][col].values)
-                    #     print(f"Impute {col} with value {fillna_val}, where {condition_column} == {val}")
-                    #     data[col] = data.groupby(condition_column)[col].transform(lambda x: x.fillna(fillna_val))
-
                     mapping_dict = dict()
                     for val in filtered_df[condition_column].unique():
                         fillna_val = get_impute_value(filtered_df[filtered_df[condition_column] == val][col].values)
