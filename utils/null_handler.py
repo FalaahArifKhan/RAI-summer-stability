@@ -5,6 +5,46 @@ from scipy import stats
 from sklearn.experimental import enable_iterative_imputer # Required for IterativeImputer
 from sklearn.impute import IterativeImputer
 
+from utils.EDA_utils import imputed_nulls_analysis
+
+
+def impute_df_with_all_techniques(real_data, corrupted_data, target_column, column_type, enable_plots=True):
+    if column_type == "categorical":
+        how_to_list = ["drop-column", "drop-rows", "predict-by-sklearn",
+                       "impute-by-mode", "impute-by-mode-trimmed", "impute-by-mode-conditional"]
+    elif column_type == "numerical":
+        how_to_list = ["drop-column", "drop-rows", "predict-by-sklearn",
+                       "impute-by-mean", "impute-by-mean-trimmed", "impute-by-mean-conditional",
+                       "impute-by-median", "impute-by-median-trimmed", "impute-by-median-conditional"]
+    else:
+        raise ValueError("Incorrect input column_type. It must be in ('categorical', 'numerical')")
+
+    imputed_data_dict = dict()
+    for how_to in how_to_list:
+        print("\n" * 4, "#" * 15, f" Impute {target_column} column with {how_to} technique ", "#" * 15)
+        if 'conditional' in how_to:
+            for condition_column in ["SEX", "RAC1P"]:
+                # When condition_column == target_column, imputation based on subgroups does not make sense
+                if condition_column == target_column:
+                    continue
+                imputed_data = handle_df_nulls(corrupted_data,
+                                               how_to,
+                                               condition_column=condition_column,
+                                               column_names=[target_column])
+                imputed_data_dict[f'{how_to}_{condition_column}'] = imputed_data
+                imputed_nulls_analysis(real_data, imputed_data, corrupted_data, target_col=target_column)
+        else:
+            imputed_data = handle_df_nulls(corrupted_data,
+                                           how_to,
+                                           condition_column=None,
+                                           column_names=[target_column])
+            imputed_data_dict[how_to] = imputed_data
+            # Make plots for other techniques except "drop-column", since we dropped the column based on this technique
+            if enable_plots and how_to != "drop-column":
+                imputed_nulls_analysis(real_data, imputed_data, corrupted_data, target_col=target_column)
+
+    return imputed_data_dict
+
 
 def handle_df_nulls(input_data, how, column_names, condition_column=None):
     """
@@ -110,12 +150,12 @@ def initially_handle_nulls(X_data, missing):
         'special': missing,
     }
     # Checking dataset shape before handling nulls
-    print("Dataset shape before handling nulls: ", X_data.shape, X_data.columns)
+    print("Dataset shape before handling nulls: ", X_data.shape)
 
     for how_to in handle_nulls.keys():
         X_data = handle_df_nulls(X_data, how_to, handle_nulls[how_to])
     # Checking dataset shape after handling nulls
-    print("Dataset shape after handling nulls: ", X_data.shape, X_data.columns)
+    print("Dataset shape after handling nulls: ", X_data.shape)
     return X_data
 
 
@@ -131,6 +171,14 @@ def get_sample_rows(data, target_col, fraction):
     # Pick a random percentile of values in other column
     rows = data[depends_on_col].sort_values().iloc[perc_idx].index
     return rows
+
+
+def simulate_scenario(data, simulated_scenario_dict):
+    return nulls_simulator(data,
+                           simulated_scenario_dict['target_col'],
+                           simulated_scenario_dict['condition_col'],
+                           simulated_scenario_dict['special_values'],
+                           simulated_scenario_dict['fraction'])
 
 
 def nulls_simulator(data, target_col, condition_col, special_values, fraction, nan_value=np.nan):

@@ -34,7 +34,8 @@ def null_scenario_analysis(data, corrupted_data, target_col, condition_col, spec
     # Count of nulls
     print(f'Count of nulls for {target_col} column: {corrupted_data[target_col].isnull().sum()}')
     print(f'Count of all records in {target_col} column: {data[target_col].count()}')
-    print(f'Count of records in {condition_col} column in the defined condition: {data[data[condition_col].isin(special_values)][target_col].count()}\n\n')
+    print(f'Count of records in {condition_col} column in the defined condition: '
+          f'{data[data[condition_col].isin(special_values)][target_col].count()}\n\n')
 
     # Print density plots for the target column before and after the corruption
     plt.figure()

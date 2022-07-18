@@ -12,15 +12,18 @@ def TPR_diff(predicted, true, group_info, advantaged, disadvantaged):
     
     return adv_tpr, disadv_tpr, adv_tpr - disadv_tpr
 
+
 def DisparateImpact(predicted, true, group_info, advantaged, disadvantaged):
     adv_prob = np.mean(predicted[group_info == advantaged])
     disadv_prob = np.mean(predicted[group_info == disadvantaged])
     return adv_prob, disadv_prob, disadv_prob/adv_prob
 
+
 def BaseRates(predicted, true, group_info, advantaged, disadvantaged):
     adv_prob = np.mean(true[group_info == advantaged])
     disadv_prob = np.mean(true[group_info == disadvantaged])
     return adv_prob, disadv_prob, disadv_prob/adv_prob
+
 
 def StatisticalParity_diff(predicted, true, group_info, advantaged, disadvantaged):
     adv_base, disadv_base, __ = BaseRates(predicted, true, group_info, advantaged, disadvantaged)
@@ -30,17 +33,21 @@ def StatisticalParity_diff(predicted, true, group_info, advantaged, disadvantage
     SP_disadv = disadv_out/disadv_base
     return SP_adv, SP_disadv, SP_adv-SP_disadv
 
+
 def Accuracy_diff(predicted, true, group_info, advantaged, disadvantaged):
     adv_acc = np.mean([predicted[group_info == advantaged] == true[group_info == advantaged]])
     disadv_acc = np.mean([predicted[group_info == disadvantaged] == true[group_info == disadvantaged]])
     return adv_acc, disadv_acc, adv_acc-disadv_acc
 
+
 def Accuracy_overall(predicted, true):
     return np.mean([predicted == true])
+
 
 def generate_powerset(iterable):
     s = list(iterable)
     return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
+
 
 def load_groups_of_interest(filename, X_test_df):
     f = open(filename)
@@ -80,6 +87,7 @@ def load_groups_of_interest(filename, X_test_df):
         test_groups[group_name] = res
     
     return test_groups
+
 
 def compute_metric(predicted, true, test_groups, metric):
     res = pd.DataFrame({})
