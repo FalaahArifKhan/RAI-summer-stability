@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 from scipy import stats
-from sklearn.experimental import enable_iterative_imputer
+from sklearn.experimental import enable_iterative_imputer # Required for IterativeImputer
 from sklearn.impute import IterativeImputer
 
 
@@ -64,7 +64,7 @@ def handle_df_nulls(input_data, how, column_names, condition_column=None):
                 filtered_df.sort_values(by=[col], ascending=False, inplace=True)
                 filtered_df = filtered_df[reduce_n_rows: -reduce_n_rows]
 
-            if 'conditional' in how:
+            if 'conditional' in how and col != condition_column:
                 if condition_column == 'AGEP':
                     threshold_age = 40
                     fillna_val_less = get_impute_value(filtered_df[filtered_df[condition_column] < threshold_age][col].values)
@@ -83,7 +83,11 @@ def handle_df_nulls(input_data, how, column_names, condition_column=None):
                     missing_mask = data[col].isna()
                     data.loc[missing_mask, col] = data.loc[missing_mask, condition_column].map(mapping_dict)
             else:
-                vals[col] = get_impute_value(filtered_df[col].values)
+                if col == condition_column:
+                    print(f"\n\n\nERROR: a target column from column_names list can not be equal to conditional column. "
+                          f"Skip {how} technique for {col} column\n\n\n")
+                else:
+                    vals[col] = get_impute_value(filtered_df[col].values)
         if len(vals) > 0:
             print("Impute values: ", vals)
             data.fillna(value=vals, inplace=True)
@@ -149,8 +153,8 @@ def find_column_mode(data):
 
 
 def find_column_mean(data):
-    return np.mean(data)
+    return np.mean(data).round
 
 
 def find_column_median(data):
-    return np.median(data)
+    return np.median(data).round
