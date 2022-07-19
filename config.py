@@ -39,8 +39,8 @@ MODELS_CONFIG = [
         'model_name': 'XGBClassifier',
         'model': XGBClassifier(random_state=SEED, verbosity = 0),
         'params': {
-            'learning_rate': [0.1, 0.01],
-            'n_estimators': [100, 200, 300],
+            'learning_rate': [0.1],
+            'n_estimators': [200, 300],
             'max_depth': range(3, 10, 2),
             'objective':  ['binary:logistic'],
         }

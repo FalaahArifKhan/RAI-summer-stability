@@ -12,7 +12,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import make_scorer, accuracy_score, f1_score
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
 
-from config import SEED, MODELS_CONFIG
+from config import *
 
 
 def folds_iterator(n_folds, samples_per_fold, size):
@@ -30,11 +30,13 @@ def folds_iterator(n_folds, samples_per_fold, size):
 def make_feature_df(data, categorical_columns, numerical_columns):
     feature_df = pd.get_dummies(data[categorical_columns], columns=categorical_columns)
     for col in numerical_columns:
-        feature_df[col] = data[col]
+        if col in data.columns:
+            feature_df[col] = data[col]
     return feature_df
 
 
-def test_baseline_models(X_data, y_data, categorical_columns, numerical_columns, n_folds = 3):
+def test_baseline_models(X_data, y_data, categorical_columns = COLUMN_TO_TYPE['categorical'],
+                         numerical_columns = COLUMN_TO_TYPE['numerical'], n_folds = 3):
     X_train, X_test, y_train, y_test = train_test_split(X_data, y_data, test_size=0.2, random_state=SEED)
     print("Baseline X_train shape: ", X_train.shape)
     print("Baseline X_test shape: ", X_test.shape)
