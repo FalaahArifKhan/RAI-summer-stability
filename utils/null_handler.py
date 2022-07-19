@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import seaborn as sns
 
 from scipy import stats
 from sklearn.experimental import enable_iterative_imputer # Required for IterativeImputer
@@ -18,6 +19,9 @@ def impute_df_with_all_techniques(real_data, corrupted_data, target_column, colu
                        "impute-by-median", "impute-by-median-trimmed", "impute-by-median-conditional"]
     else:
         raise ValueError("Incorrect input column_type. It must be in ('categorical', 'numerical')")
+
+    # Set style for seaborn plots
+    sns.set_style("darkgrid")
 
     imputed_data_dict = dict()
     for how_to in how_to_list:
