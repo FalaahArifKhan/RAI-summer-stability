@@ -12,7 +12,7 @@ DATASET_CONFIG = {
 }
 
 COLUMN_TO_TYPE = {
-    "categorical": ['MAR', 'MIL', 'ESP', 'MIG', 'DREM', 'NATIVITY', 'DIS', 'DEAR', 'DEYE', 'SEX', 'RAC1P'],
+    "categorical": ['MAR', 'MIL', 'ESP', 'MIG', 'DREM', 'NATIVITY', 'DIS', 'DEAR', 'DEYE', 'SEX', 'RAC1P', 'RELP', 'CIT', 'ANC'],
     "numerical": ['SCHL', 'AGEP']
 }
 

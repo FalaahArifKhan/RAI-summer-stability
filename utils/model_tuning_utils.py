@@ -27,21 +27,32 @@ def folds_iterator(n_folds, samples_per_fold, size):
               np.arange(size - samples_per_fold * (i + 1), size - samples_per_fold * i)
 
 
-def test_baseline_models(X_data, y_data, n_folds = 3):
+def make_feature_df(data, categorical_columns, numerical_columns):
+    feature_df = pd.get_dummies(data[categorical_columns], columns=categorical_columns)
+    for col in numerical_columns:
+        feature_df[col] = data[col]
+    return feature_df
+
+
+def test_baseline_models(X_data, y_data, categorical_columns, numerical_columns, n_folds = 3):
     X_train, X_test, y_train, y_test = train_test_split(X_data, y_data, test_size=0.2, random_state=SEED)
-    print("baseline_X_train shape: ", X_train.shape)
-    print("baseline_X_test shape: ", X_test.shape)
+    print("Baseline X_train shape: ", X_train.shape)
+    print("Baseline X_test shape: ", X_test.shape)
+
+    X_train_features = make_feature_df(X_train, categorical_columns, numerical_columns)
+    X_test_features = make_feature_df(X_test, categorical_columns, numerical_columns)
+    print('X_train_features.columns: ', X_train_features.columns)
 
     scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)
-    X_test = scaler.transform(X_test)
+    X_train_features = scaler.fit_transform(X_train_features)
+    X_test_features = scaler.transform(X_test_features)
 
     samples_per_fold = len(y_test)
     best_results_df = pd.DataFrame(columns=('Dataset_Name', 'Model_Name', 'F1_Score',
                                             'Accuracy_Score',
                                             'Model_Best_Params', 'Model_Pred'))
     ML_results_df = test_ML_models(best_results_df, MODELS_CONFIG, n_folds, samples_per_fold,
-                                   X_train, y_train, X_test, y_test, "Folktables [NY 2018]",
+                                   X_train_features, y_train, X_test_features, y_test, "Folktables [NY 2018]",
                                    show_plots=True, debug_mode=True)
     return ML_results_df
 
