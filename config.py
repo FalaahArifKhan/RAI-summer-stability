@@ -1,9 +1,16 @@
 from sklearn.linear_model import LogisticRegression
 from xgboost import XGBClassifier
 from sklearn.tree import DecisionTreeClassifier
+from folktables import ACSEmployment
 
 
 SEED=10
+DATASET_CONFIG = {
+    'state': ["NY"],
+    'year': '2018',
+    'task': ACSEmployment
+}
+
 COLUMN_TO_TYPE = {
     "categorical": ['MAR', 'MIL', 'ESP', 'MIG', 'DREM', 'NATIVITY', 'DIS', 'DEAR', 'DEYE', 'SEX', 'RAC1P'],
     "numerical": ['SCHL', 'AGEP']
