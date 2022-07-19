@@ -32,8 +32,6 @@ def UQ_by_boostrap(X_train, y_train, X_test, y_test, base_model, n_estimators, b
     return ensemble, predictions
 
 
-
-
 def compute_label_stability(predicted_labels):
     '''
     Label stability is defined as the absolute difference between the number of times the sample is classified as 0 and 1

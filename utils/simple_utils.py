@@ -1,9 +1,9 @@
-from config import column_to_type
+from config import COLUMN_TO_TYPE
 
 
 def get_column_type(column_name):
-    for column_type in column_to_type.keys():
-        if column_name in column_to_type[column_type]:
+    for column_type in COLUMN_TO_TYPE.keys():
+        if column_name in COLUMN_TO_TYPE[column_type]:
             return column_type
     return None
 

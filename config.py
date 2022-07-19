@@ -1,10 +1,47 @@
-column_to_type = {
+from sklearn.linear_model import LogisticRegression
+from xgboost import XGBClassifier
+from sklearn.tree import DecisionTreeClassifier
+
+
+SEED=10
+COLUMN_TO_TYPE = {
     "categorical": ['MAR', 'MIL', 'ESP', 'MIG', 'DREM', 'NATIVITY', 'DIS', 'DEAR', 'DEYE', 'SEX', 'RAC1P'],
     "numerical": ['SCHL', 'AGEP']
 }
 
+MODELS_CONFIG = [
+    {
+        'model_name': 'LogisticRegression',
+        'model': LogisticRegression(random_state=SEED),
+        'params': {
+            'penalty': ['none', 'l2'],
+            'solver': ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'],
+            'max_iter': range(50, 251, 50),
+        }
+    },
+    {
+        'model_name': 'DecisionTreeClassifier',
+        'model': DecisionTreeClassifier(random_state=SEED),
+        'params': {
+            "max_depth": [2, 3, 4, 6, 10],
+            "max_features": [0.6, 'sqrt'],
+            "criterion": ["gini", "entropy"]
+        }
+    },
+    {
+        'model_name': 'XGBClassifier',
+        'model': XGBClassifier(random_state=SEED, verbosity = 0),
+        'params': {
+            'learning_rate': [0.1, 0.01],
+            'n_estimators': [100, 200, 300],
+            'max_depth': range(3, 10, 2),
+            'objective':  ['binary:logistic'],
+        }
+    }
+]
+
 # Config with simulated scenarios
-simulated_scenarios_dict = {
+SIMULATED_SCENARIOS_DICT = {
     # "Optional" Type of Nulls
     'MAR': {
         'special_values': [2, 3, 4],

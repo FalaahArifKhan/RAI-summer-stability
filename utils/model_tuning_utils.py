@@ -6,9 +6,13 @@ import matplotlib.pyplot as plt
 from pprint import pprint
 from copy import deepcopy
 
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import make_scorer, accuracy_score, f1_score
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
+
+from config import SEED, MODELS_CONFIG
 
 
 def folds_iterator(n_folds, samples_per_fold, size):
@@ -21,6 +25,25 @@ def folds_iterator(n_folds, samples_per_fold, size):
     for i in range(n_folds):
         yield np.arange(0, size - samples_per_fold * (i + 1)), \
               np.arange(size - samples_per_fold * (i + 1), size - samples_per_fold * i)
+
+
+def test_baseline_models(X_data, y_data, n_folds = 3):
+    X_train, X_test, y_train, y_test = train_test_split(X_data, y_data, test_size=0.2, random_state=SEED)
+    print("baseline_X_train shape: ", X_train.shape)
+    print("baseline_X_test shape: ", X_test.shape)
+
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+
+    samples_per_fold = len(y_test)
+    best_results_df = pd.DataFrame(columns=('Dataset_Name', 'Model_Name', 'F1_Score',
+                                            'Accuracy_Score',
+                                            'Model_Best_Params', 'Model_Pred'))
+    ML_results_df = test_ML_models(best_results_df, MODELS_CONFIG, n_folds, samples_per_fold,
+                                   X_train, y_train, X_test, y_test, "Folktables [NY 2018]",
+                                   show_plots=True, debug_mode=True)
+    return ML_results_df
 
 
 def validate_model(model, x, y, params, n_folds, samples_per_fold):
