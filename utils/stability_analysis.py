@@ -8,8 +8,8 @@ from utils.analysis_helper import load_groups_of_interest, compute_metric
 
 def generate_bootstrap(features, labels, boostrap_size, with_replacement=True):
     bootstrap_index = np.random.choice(features.shape[0], size=boostrap_size, replace=with_replacement)
-    bootstrap_features = pd.DataFrame(features).loc[bootstrap_index].values
-    bootstrap_labels = pd.DataFrame(labels).loc[bootstrap_index].values
+    bootstrap_features = pd.DataFrame(features).iloc[bootstrap_index].values
+    bootstrap_labels = pd.DataFrame(labels).iloc[bootstrap_index].values
     if len(bootstrap_features) == boostrap_size:
         return bootstrap_features, bootstrap_labels
     else:
@@ -24,15 +24,17 @@ def UQ_by_boostrap(X_train, y_train, X_test, y_test, base_model, n_estimators, b
     ensemble = {}
     
     for m in range(n_estimators):
-        ensemble[m] = base_model
+        model = base_model
         X_sample, y_sample = generate_bootstrap(X_train, y_train, boostrap_size, with_replacement)
-        ensemble[m].fit(X_sample, y_sample)
-        predictions[m] = ensemble[m].predict_proba(X_test)[:,0]
+        model.fit(X_sample, y_sample)
+        predictions[m] = model.predict_proba(X_test)[:, 0]
     
         if verbose:
             print(m)
-            print("Train acc:", ensemble[m].score(X_sample, y_sample))
-            print("Val acc:", ensemble[m].score(X_test, y_test))
+            print("Train acc:", model.score(X_sample, y_sample))
+            print("Val acc:", model.score(X_test, y_test))
+
+        ensemble[m] = model
     return ensemble, predictions
 
 
@@ -76,12 +78,10 @@ def get_per_sample_accuracy(y_test, results):
     return per_sample_accuracy, label_stability
 
 
-def get_fairness_metrics(y_preds, X_test, y_test):
+def get_fairness_metrics(y_preds, test_groups, y_test):
     fairness_metrics = {}
     metrics = ['Accuracy', 'Disparate_Impact', 'Equal_Opportunity', 'Statistical_Parity_Difference']
 
-    # For computing fairness-related metrics
-    test_groups = load_groups_of_interest(os.path.join('..', 'groups.json'), X_test)
     for metric in metrics:
         fairness_metrics[metric] = compute_metric(y_preds, y_test, test_groups, metric)
 

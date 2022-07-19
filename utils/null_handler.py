@@ -26,6 +26,7 @@ def impute_df_with_all_techniques(real_data, corrupted_data, target_column, colu
     imputed_data_dict = dict()
     for how_to in how_to_list:
         print("\n" * 4, "#" * 15, f" Impute {target_column} column with {how_to} technique ", "#" * 15)
+        imputed_data = None
         if 'conditional' in how_to:
             for condition_column in ["SEX", "RAC1P"]:
                 # When condition_column == target_column, imputation based on subgroups does not make sense
@@ -36,16 +37,17 @@ def impute_df_with_all_techniques(real_data, corrupted_data, target_column, colu
                                                condition_column=condition_column,
                                                column_names=[target_column])
                 imputed_data_dict[f'{how_to}_{condition_column}'] = imputed_data
-                imputed_nulls_analysis(real_data, imputed_data, corrupted_data, target_col=target_column)
+
         else:
             imputed_data = handle_df_nulls(corrupted_data,
                                            how_to,
                                            condition_column=None,
                                            column_names=[target_column])
             imputed_data_dict[how_to] = imputed_data
-            # Make plots for other techniques except "drop-column", since we dropped the column based on this technique
-            if enable_plots and how_to != "drop-column":
-                imputed_nulls_analysis(real_data, imputed_data, corrupted_data, target_col=target_column)
+
+        # Make plots for other techniques except "drop-column", since we dropped the column based on this technique
+        if enable_plots and how_to != "drop-column":
+            imputed_nulls_analysis(real_data, imputed_data, corrupted_data, target_col=target_column)
 
     return imputed_data_dict
 
