@@ -57,7 +57,6 @@ def load_groups_of_interest(filename, X_test_df):
     # Binary groups
     for group_type in group_info.keys():
         res = {}
-        print("group_info[group_type]['column_name'] -- ", group_info[group_type]['column_name'])
         raw_values = X_test_df[group_info[group_type]['column_name']].values
         
         if group_info[group_type]['preprocess'] == 0:

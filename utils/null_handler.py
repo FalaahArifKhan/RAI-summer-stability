@@ -93,7 +93,7 @@ def handle_df_nulls(input_data, how, column_names, condition_column=None):
                                    max_value=input_data[column_names[0]].max())
         imputed = imputer.fit_transform(data)
         data = pd.DataFrame(imputed, columns=data.columns)
-        data = data[column_names].round()
+        data[column_names] = data[column_names].round()
     else:
         get_impute_value = None
         if how == 'special':

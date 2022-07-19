@@ -20,17 +20,15 @@ def make_feature_df(data, categorical_columns, numerical_columns):
     return feature_df
 
 
-def preprocess_dataset(X_data, y_data, categorical_columns = COLUMN_TO_TYPE['categorical'],
+def preprocess_dataset(X_imputed, y_data, categorical_columns = COLUMN_TO_TYPE['categorical'],
                        numerical_columns = COLUMN_TO_TYPE['numerical']):
-    X_features = make_feature_df(X_data, categorical_columns, numerical_columns)
+    X_features = make_feature_df(X_imputed, categorical_columns, numerical_columns)
     X_train_features, X_test_features, y_train, y_test = train_test_split(X_features, y_data, test_size=0.2, random_state=SEED)
-    print("X_train_features shape: ", X_train_features.shape)
-    print("X_test_features shape: ", X_test_features.shape)
-    print('X_train_features.columns: ', X_train_features.columns)
 
     scaler = StandardScaler()
     X_train_features = scaler.fit_transform(X_train_features)
     X_test_features = scaler.transform(X_test_features)
+
     return X_train_features, y_train, X_test_features, y_test
 
 

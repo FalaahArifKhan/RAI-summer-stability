@@ -18,7 +18,7 @@ def plot_generic(x, y, xlabel, ylabel, plot_title):
     plt.scatter(x, y)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
-    plt.title(plot_title)
+    plt.title(plot_title, fontsize=20)
     plt.show()
 
 
