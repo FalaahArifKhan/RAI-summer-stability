@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import seaborn as sns
 import matplotlib.pyplot as plt
 
 from pprint import pprint
@@ -69,6 +70,7 @@ def test_evaluation(cur_best_model, model_name, cur_best_params,
 
     if show_plots:
         # plot the confusion matrix
+        sns.set_style("white")
         cm = confusion_matrix(cur_y_test, cur_model_pred, labels=cur_best_model.classes_)
         disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["Employed", "Not Employed"])
         disp.plot()
