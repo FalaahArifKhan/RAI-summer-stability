@@ -12,6 +12,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import make_scorer, accuracy_score, f1_score
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
 
+from utils.simple_utils import make_feature_df
 from config import *
 
 
@@ -25,14 +26,6 @@ def folds_iterator(n_folds, samples_per_fold, size):
     for i in range(n_folds):
         yield np.arange(0, size - samples_per_fold * (i + 1)), \
               np.arange(size - samples_per_fold * (i + 1), size - samples_per_fold * i)
-
-
-def make_feature_df(data, categorical_columns, numerical_columns):
-    feature_df = pd.get_dummies(data[categorical_columns], columns=categorical_columns)
-    for col in numerical_columns:
-        if col in data.columns:
-            feature_df[col] = data[col]
-    return feature_df
 
 
 def test_baseline_models(X_data, y_data, categorical_columns = COLUMN_TO_TYPE['categorical'],
@@ -49,6 +42,17 @@ def test_baseline_models(X_data, y_data, categorical_columns = COLUMN_TO_TYPE['c
     X_train_features = scaler.fit_transform(X_train_features)
     X_test_features = scaler.transform(X_test_features)
 
+    samples_per_fold = len(y_test)
+    best_results_df = pd.DataFrame(columns=('Dataset_Name', 'Model_Name', 'F1_Score',
+                                            'Accuracy_Score',
+                                            'Model_Best_Params', 'Model_Pred'))
+    ML_results_df = test_ML_models(best_results_df, MODELS_CONFIG, n_folds, samples_per_fold,
+                                   X_train_features, y_train, X_test_features, y_test, "Folktables [NY 2018]",
+                                   show_plots=True, debug_mode=True)
+    return ML_results_df
+
+
+def test_models(X_train_features, y_train, X_test_features, y_test, n_folds = 3):
     samples_per_fold = len(y_test)
     best_results_df = pd.DataFrame(columns=('Dataset_Name', 'Model_Name', 'F1_Score',
                                             'Accuracy_Score',

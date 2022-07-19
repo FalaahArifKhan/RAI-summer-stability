@@ -13,6 +13,15 @@ def sns_set_size(height, width):
     sns.set(rc={'figure.figsize':(width, height)})
 
 
+def plot_generic(x, y, xlabel, ylabel, plot_title):
+    plt.figure(figsize=(20,10))
+    plt.scatter(x, y)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(plot_title)
+    plt.show()
+
+
 def plot_column_grouped_by_race(data, plot_column):
     fig = plt.figure()
     gs0 = matplotlib.gridspec.GridSpec(ncols=3, nrows=3, figure=fig, wspace=0.5, hspace=0.5)

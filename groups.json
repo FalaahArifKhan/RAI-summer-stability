@@ -1,18 +1,14 @@
 {
-    "Race":
-    {
+    "Race": {
         "column_name":"RAC1P",
         "preprocess": 0,
         "advantaged": 1,
         "disadvantaged":2
     },
-    
-    "Sex":
-    {
+    "Sex": {
         "column_name":"SEX",
         "preprocess":0,
         "advantaged": 1,
         "disadvantaged":2
-    }  
-
+    }
 }
