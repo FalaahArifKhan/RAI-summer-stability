@@ -16,8 +16,8 @@ def sns_set_size(height, width):
 def plot_generic(x, y, xlabel, ylabel, plot_title):
     plt.figure(figsize=(20,10))
     plt.scatter(x, y)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    plt.xlabel(xlabel, fontsize=14)
+    plt.ylabel(ylabel, fontsize=14)
     plt.title(plot_title, fontsize=20)
     plt.show()
 

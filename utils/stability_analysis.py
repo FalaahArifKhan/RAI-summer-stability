@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import scipy as sp
 
+from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 
@@ -98,6 +99,7 @@ def get_fairness_metrics(y_preds, test_groups, y_test):
 def quantify_uncertainty(target_column, y_data, imputed_data_dict, imputation_technique, n_estimators=50, make_plots=True):
     X_train_imputed, X_test_imputed, y_train_imputed, y_test_imputed, test_groups = prepare_datasets(imputed_data_dict, imputation_technique, y_data)
 
+    # TODO: use the best model here
     decision_tree_model = DecisionTreeClassifier(criterion='entropy', max_depth=10, max_features=0.6)
     boostrap_size = int(0.5 * X_train_imputed.shape[0])
 
@@ -160,9 +162,44 @@ def save_uncertainty_results_to_file(target_column, imputation_technique, stds, 
     pd.DataFrame(metrics_to_report)
 
     dir_path = os.path.join('..', 'results', f'{target_column}_column')
-    os.makedirs(dir_path)
+    os.makedirs(dir_path, exist_ok=True)
 
     filename = f"{DATASET_CONFIG['state'][0]}_{DATASET_CONFIG['year']}_{target_column}_{imputation_technique.replace('-', '_')}.pkl"
     f = open(os.path.join(dir_path, filename), "wb")
     pickle.dump(metrics_to_report,f)
     f.close()
+
+
+def display_result_plots(target_column, imputation_techniques):
+    results = dict()
+    for imputation_technique in imputation_techniques:
+        filename = f"{DATASET_CONFIG['state'][0]}_{DATASET_CONFIG['year']}_{target_column}_{imputation_technique.replace('-', '_')}.pkl"
+        with open(os.path.join('..', 'results', f'{target_column}_column', filename), 'rb') as file:
+            results[imputation_technique] = pickle.load(file)
+
+    y_metric = ['SPD_Race', 'SPD_Sex', 'SPD_Race_Sex']
+    display_uncertainty_plot(results,
+                             x_metric = 'Label_stability',
+                             y_metric = y_metric)
+    display_uncertainty_plot(results,
+                             x_metric = 'Accuracy',
+                             y_metric = y_metric)
+    display_uncertainty_plot(results,
+                             x_metric = 'SD',
+                             y_metric = y_metric)
+
+
+def display_uncertainty_plot(results, x_metric, y_metric):
+    plt.figure(figsize=(15,8))
+    # List of all markers -- https://matplotlib.org/stable/api/markers_api.html
+    markers = ['.', 'o', '+', '>', '1', 's', 'x', '^', 'D', 'P', '*', '|']
+    for idx, technique in enumerate(results.keys()):
+        plt.scatter(results[technique][x_metric], results[technique][y_metric[0]], label="Race", marker=markers[idx], c='r')
+        plt.scatter(results[technique][x_metric], results[technique][y_metric[1]], label="Sex", marker=markers[idx], c='y')
+        plt.scatter(results[technique][x_metric], results[technique][y_metric[2]], label="Race_Sex", marker=markers[idx], c='b')
+
+    plt.xlabel(x_metric)
+    plt.ylabel("SPD_difference")
+    plt.title(x_metric, fontsize=20)
+    plt.legend(ncol=3, fontsize=10)
+    plt.show()
