@@ -191,7 +191,6 @@ def display_result_plots(target_column, imputation_techniques):
 
 
 def display_uncertainty_plot(results, x_metric, y_metric):
-    # plt.figure(figsize=(15,8))
     fig, ax = plt.subplots()
     set_size(15, 8, ax)
 
@@ -216,11 +215,11 @@ def display_uncertainty_plot(results, x_metric, y_metric):
     plt.xlabel(x_metric)
     plt.ylabel("SPD_difference")
     plt.title(x_metric, fontsize=20)
-    ax.legend(colors, ['Race', 'Sex', 'Race_Sex'], fontsize=12, loc='lower left', bbox_to_anchor=(0.25, 0))
+    ax.legend(colors, ['Race', 'Sex', 'Race_Sex'], fontsize=12)
 
     # Create the second legend and add the artist manually.
     from matplotlib.legend import Legend
-    leg = Legend(ax, shapes, techniques, fontsize=12, loc='lower left')
+    leg = Legend(ax, shapes, techniques, fontsize=12)
     ax.add_artist(leg)
 
     plt.show()
