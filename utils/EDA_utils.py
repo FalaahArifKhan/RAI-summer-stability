@@ -40,6 +40,10 @@ def plot_column_grouped_by_race(data, plot_column):
 
 def null_scenario_analysis(data, corrupted_data, target_col, condition_col, special_values,
                            print_plots_grouped_by_race=True):
+    """
+    Display plots to compare a real dataset without nulls and a corrupted dataset with nulls, created
+     based on a special null scenario
+    """
     # Count of nulls
     print(f'Count of nulls for {target_col} column: {corrupted_data[target_col].isnull().sum()}')
     print(f'Count of all records in {target_col} column: {data[target_col].count()}')
@@ -65,6 +69,10 @@ def null_scenario_analysis(data, corrupted_data, target_col, condition_col, spec
 
 
 def imputed_nulls_analysis(real_data, imputed_data, corrupted_data, target_col):
+    """
+    Display side-by-side plots to compare a real dataset without nulls, a corrupted dataset with nulls, created
+     based on a special null scenario, and a dataset without nulls, which were imputed with one of imputation techniques
+    """
     print(f"Number of nulls in {target_col} column in the corrupted dataframe: ", corrupted_data[target_col].isnull().sum())
     print(f"Number of nulls in {target_col} column in the imputed dataframe: ", imputed_data[target_col].isnull().sum())
 

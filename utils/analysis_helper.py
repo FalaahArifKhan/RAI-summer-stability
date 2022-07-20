@@ -110,5 +110,3 @@ def compute_metric(predicted, true, test_groups, metric):
         temp_df = pd.DataFrame(temp, columns=[group], index=['adv', 'disadv', metric])
         res = pd.concat([res,temp_df], axis=1)
     return res
-
-

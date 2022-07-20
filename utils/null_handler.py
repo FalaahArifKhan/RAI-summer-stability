@@ -10,6 +10,16 @@ from utils.EDA_utils import imputed_nulls_analysis
 
 
 def impute_df_with_all_techniques(real_data, corrupted_data, target_column, column_type, enable_plots=True):
+    """
+    Impute target_column in corrupted_data with appropriate techniques.
+
+    :param real_data:
+    :param corrupted_data:
+    :param target_column:
+    :param column_type:
+    :param enable_plots:
+    :return: a dict, where a key is a name of an imputation technique, value is an imputed datasets with respective techniques
+    """
     if column_type == "categorical":
         how_to_list = ["drop-column", "drop-rows", "predict-by-sklearn",
                        "impute-by-mode", "impute-by-mode-trimmed", "impute-by-mode-conditional"]

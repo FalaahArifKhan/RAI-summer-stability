@@ -215,11 +215,11 @@ def display_uncertainty_plot(results, x_metric, y_metric):
     plt.xlabel(x_metric)
     plt.ylabel("SPD_difference")
     plt.title(x_metric, fontsize=20)
-    ax.legend(colors, ['Race', 'Sex', 'Race_Sex'], fontsize=12)
+    ax.legend(colors, ['Race', 'Sex', 'Race_Sex'], fontsize=12, loc='upper center', title='Colors')
 
     # Create the second legend and add the artist manually.
     from matplotlib.legend import Legend
-    leg = Legend(ax, shapes, techniques, fontsize=12)
+    leg = Legend(ax, shapes, techniques, fontsize=12, title='Markers')
     ax.add_artist(leg)
 
     plt.show()

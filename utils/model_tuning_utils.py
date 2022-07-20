@@ -30,6 +30,11 @@ def folds_iterator(n_folds, samples_per_fold, size):
 
 def test_baseline_models(X_data, y_data, categorical_columns = COLUMN_TO_TYPE['categorical'],
                          numerical_columns = COLUMN_TO_TYPE['numerical'], n_folds = 3):
+    """
+    Prepare datasets and find the best model for an original baseline dataset without nulls.
+
+    :return: a dataframe of metrics, measured for each model and its best parameters
+    """
     X_train, X_test, y_train, y_test = train_test_split(X_data, y_data, test_size=0.2, random_state=SEED)
     print("Baseline X_train shape: ", X_train.shape)
     print("Baseline X_test shape: ", X_test.shape)
@@ -53,6 +58,11 @@ def test_baseline_models(X_data, y_data, categorical_columns = COLUMN_TO_TYPE['c
 
 
 def test_models(X_train_features, y_train, X_test_features, y_test, n_folds = 3):
+    """
+    Find the best model for a non-baseline dataset without nulls.
+
+    :return: a dataframe of metrics, measured for each model and its best parameters
+    """
     samples_per_fold = len(y_test)
     best_results_df = pd.DataFrame(columns=('Dataset_Name', 'Model_Name', 'F1_Score',
                                             'Accuracy_Score',
