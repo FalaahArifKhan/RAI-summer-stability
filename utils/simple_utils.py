@@ -43,7 +43,7 @@ def check_conditional_techniques(corrupted_data, target_column):
     {'<key_to_group_stats>': {'RAC1P-1': (<max_value>, '<target_column>-<most_often_occurred_value>'),
                'RAC1P-2': (<max_value>, '<target_column>-<most_often_occurred_value>'),
                ...}}
-
+    Eg.
     {'RAC1P': {'RAC1P-1': (2273, 'AGEP-60.0'),
                'RAC1P-2': (435, 'AGEP-19.0'),
                ...},
