@@ -118,9 +118,12 @@ def quantify_uncertainty(target_column, y_data, imputed_data_dict, imputation_te
     X_train_imputed, X_test_imputed, y_train_imputed, y_test_imputed, test_groups = prepare_datasets(imputed_data_dict, imputation_technique, y_data)
 
     # TODO: use the best model here
+    #  set n_estimators = 100
     # decision_tree_model = DecisionTreeClassifier(criterion='entropy', max_depth=10, max_features=0.6)
 
     # Set hyper-parameters for the best model
+
+    # TODO: save DecisionTreeClassifier model with its hyper-parameters in file and use here
     tree_model = XGBClassifier(learning_rate=0.1, max_depth=5, n_estimators=200, objective='binary:logistic')
     boostrap_size = int(0.5 * X_train_imputed.shape[0])
 
@@ -153,12 +156,14 @@ def quantify_uncertainty(target_column, y_data, imputed_data_dict, imputation_te
 
 
 def prepare_datasets(imputed_data_dict, imputation_technique, y_data):
+    # TODO: add documentation here
     X_imputed = imputed_data_dict[imputation_technique]
 
     # Also dropping rows from the label
     y_data_imputed = y_data.iloc[X_imputed.index].copy(deep=True)
 
     # For computing fairness-related metrics
+    # TODO: create test_groups after using preprocess_dataset()
     _, X_test, _, _ = train_test_split(X_imputed, y_data_imputed, test_size=0.2, random_state=SEED)
     test_groups = load_groups_of_interest(os.path.join('..', 'groups.json'), X_test)
 

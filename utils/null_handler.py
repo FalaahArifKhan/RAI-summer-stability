@@ -7,6 +7,7 @@ from sklearn.experimental import enable_iterative_imputer # Required for Iterati
 from sklearn.impute import IterativeImputer
 
 from utils.EDA_utils import imputed_nulls_analysis
+from config import SEED
 
 
 def impute_df_with_all_techniques(real_data, corrupted_data, target_column, column_type, enable_plots=True):
@@ -103,7 +104,7 @@ def handle_df_nulls(input_data, how, column_names, condition_column=None):
             return data
 
         # Setting the random_state argument for reproducibility
-        imputer = IterativeImputer(random_state=42,
+        imputer = IterativeImputer(random_state=SEED,
                                    min_value=input_data[column_names[0]].min(),
                                    max_value=input_data[column_names[0]].max())
         imputed = imputer.fit_transform(data)
@@ -162,6 +163,7 @@ def apply_conditional_technique(data, column_names, condition_column, how, get_i
                   f"Skip {how} technique for {col} column\n\n\n")
             continue
 
+        # TODO: use AGEP_categorical instead of this if-statement
         if condition_column == 'AGEP':
             threshold_age = 40
             fillna_val_less = get_impute_value(filtered_df[filtered_df[condition_column] < threshold_age][col].values)
