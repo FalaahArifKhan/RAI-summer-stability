@@ -1,4 +1,6 @@
 import pandas as pd
+import matplotlib.pyplot as plt
+
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
@@ -42,3 +44,15 @@ def check_conditional_techniques(corrupted_data, target_column):
             mapping_dict[condition_column][f"{condition_column}-{val}"] = counts_df.iloc[0], f'{target_column}-{counts_df.index[0]}'
 
     return mapping_dict
+
+
+def set_size(w,h, ax=None):
+    """ w, h: width, height in inches """
+    if not ax: ax=plt.gca()
+    l = ax.figure.subplotpars.left
+    r = ax.figure.subplotpars.right
+    t = ax.figure.subplotpars.top
+    b = ax.figure.subplotpars.bottom
+    figw = float(w)/(r-l)
+    figh = float(h)/(t-b)
+    ax.figure.set_size_inches(figw, figh)

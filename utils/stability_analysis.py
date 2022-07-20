@@ -10,7 +10,7 @@ from sklearn.tree import DecisionTreeClassifier
 
 from utils.analysis_helper import load_groups_of_interest, compute_metric
 from utils.EDA_utils import plot_generic
-from utils.simple_utils import preprocess_dataset
+from utils.simple_utils import preprocess_dataset, set_size
 from config import *
 
 
@@ -96,15 +96,16 @@ def get_fairness_metrics(y_preds, test_groups, y_test):
     return fairness_metrics
 
 
-def quantify_uncertainty(target_column, y_data, imputed_data_dict, imputation_technique, n_estimators=50, make_plots=True):
+def quantify_uncertainty(target_column, y_data, imputed_data_dict, imputation_technique, n_estimators=10, make_plots=True):
     X_train_imputed, X_test_imputed, y_train_imputed, y_test_imputed, test_groups = prepare_datasets(imputed_data_dict, imputation_technique, y_data)
 
     # TODO: use the best model here
-    decision_tree_model = DecisionTreeClassifier(criterion='entropy', max_depth=10, max_features=0.6)
+    # decision_tree_model = DecisionTreeClassifier(criterion='entropy', max_depth=10, max_features=0.6)
+    tree_model = XGBClassifier(learning_rate=0.1, max_depth=5, n_estimators=200, objective='binary:logistic')
     boostrap_size = int(0.5 * X_train_imputed.shape[0])
 
     ___, uq_results = UQ_by_boostrap(X_train_imputed, y_train_imputed, X_test_imputed, y_test_imputed,
-                                     decision_tree_model, n_estimators,
+                                     tree_model, n_estimators,
                                      boostrap_size, with_replacement=True, verbose=False)
 
     y_preds, results, means, stds, iqr, accuracy = count_prediction_stats(y_test_imputed.values, uq_results)
@@ -190,16 +191,36 @@ def display_result_plots(target_column, imputation_techniques):
 
 
 def display_uncertainty_plot(results, x_metric, y_metric):
-    plt.figure(figsize=(15,8))
+    # plt.figure(figsize=(15,8))
+    fig, ax = plt.subplots()
+    set_size(15, 8, ax)
+
     # List of all markers -- https://matplotlib.org/stable/api/markers_api.html
     markers = ['.', 'o', '+', '>', '1', 's', 'x', '^', 'D', 'P', '*', '|']
-    for idx, technique in enumerate(results.keys()):
-        plt.scatter(results[technique][x_metric], results[technique][y_metric[0]], label="Race", marker=markers[idx], c='r')
-        plt.scatter(results[technique][x_metric], results[technique][y_metric[1]], label="Sex", marker=markers[idx], c='y')
-        plt.scatter(results[technique][x_metric], results[technique][y_metric[2]], label="Race_Sex", marker=markers[idx], c='b')
+    techniques = results.keys()
+    save_color = True
+    colors = []
+    shapes = []
+    for idx, technique in enumerate(techniques):
+        a = ax.scatter(results[technique][x_metric], results[technique][y_metric[0]], label="Race", marker=markers[idx], c='r')
+        b = ax.scatter(results[technique][x_metric], results[technique][y_metric[1]], label="Sex", marker=markers[idx], c='y')
+        c = ax.scatter(results[technique][x_metric], results[technique][y_metric[2]], label="Race_Sex", marker=markers[idx], c='b')
+        shapes.append(a)
+
+        if save_color:
+            colors.append(a)
+            colors.append(b)
+            colors.append(c)
+            save_color = False
 
     plt.xlabel(x_metric)
     plt.ylabel("SPD_difference")
     plt.title(x_metric, fontsize=20)
-    plt.legend(ncol=3, fontsize=10)
+    ax.legend(colors, ['Race', 'Sex', 'Race_Sex'], fontsize=12, loc='lower left', bbox_to_anchor=(0.25, 0))
+
+    # Create the second legend and add the artist manually.
+    from matplotlib.legend import Legend
+    leg = Legend(ax, shapes, techniques, fontsize=12, loc='lower left')
+    ax.add_artist(leg)
+
     plt.show()
