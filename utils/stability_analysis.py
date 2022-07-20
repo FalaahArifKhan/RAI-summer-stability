@@ -70,6 +70,12 @@ def count_prediction_stats(y_test, uq_results):
 
 
 def get_per_sample_accuracy(y_test, results):
+    """
+
+    :param y_test: y test dataset
+    :param results: results variable from count_prediction_stats()
+    :return: per_sample_accuracy and label_stability (refer to https://www.osti.gov/servlets/purl/1527311)
+    """
     per_sample_predictions = {}
     label_stability = []
     per_sample_accuracy = []
@@ -97,20 +103,37 @@ def get_fairness_metrics(y_preds, test_groups, y_test):
 
 
 def quantify_uncertainty(target_column, y_data, imputed_data_dict, imputation_technique, n_estimators=10, make_plots=True):
+    """
+    Quantify uncertainty for the best model. Display plots for analysis if needed. Save results to a .pkl file
+
+    :param target_column: a name of target column, nulls in which were imputed. Just used to name a result .pkl file
+    :param y_data:  y dataset, is used to create y_train_imputed, y_test_imputed
+    :param imputed_data_dict: a dict where key is a name of imputation technique, value is a dataset imputed with that technique
+    :param imputation_technique: a name of imputation technique to get an appropriate imputed dataset
+     from imputed_data_dict to quantify uncertainty
+    :param n_estimators: number of estimators in ensemble
+    :param make_plots: bool, if display plots for analysis
+    """
+    # Prepare an imputed dataset and split it on train and test to quantify uncertainty
     X_train_imputed, X_test_imputed, y_train_imputed, y_test_imputed, test_groups = prepare_datasets(imputed_data_dict, imputation_technique, y_data)
 
     # TODO: use the best model here
     # decision_tree_model = DecisionTreeClassifier(criterion='entropy', max_depth=10, max_features=0.6)
+
+    # Set hyper-parameters for the best model
     tree_model = XGBClassifier(learning_rate=0.1, max_depth=5, n_estimators=200, objective='binary:logistic')
     boostrap_size = int(0.5 * X_train_imputed.shape[0])
 
+    # Quantify uncertainty for the bet model
     ___, uq_results = UQ_by_boostrap(X_train_imputed, y_train_imputed, X_test_imputed, y_test_imputed,
                                      tree_model, n_estimators,
                                      boostrap_size, with_replacement=True, verbose=False)
 
+    # Count metrics
     y_preds, results, means, stds, iqr, accuracy = count_prediction_stats(y_test_imputed.values, uq_results)
     per_sample_accuracy, label_stability = get_per_sample_accuracy(y_test_imputed.values, results)
 
+    # Display plots if needed
     if make_plots:
         plot_generic(means, stds, "Mean of probability", "Standard deviation", "Probability mean vs Standard deviation")
         plot_generic(stds, label_stability, "Standard deviation", "Label stability", "Standard deviation vs Label stability")
@@ -118,12 +141,14 @@ def quantify_uncertainty(target_column, y_data, imputed_data_dict, imputation_te
         plot_generic(per_sample_accuracy, stds, "Accuracy", "Standard deviation", "Accuracy vs Standard deviation")
         plot_generic(per_sample_accuracy, iqr, "Accuracy", "Inter quantile range", "Accuracy vs Inter quantile range")
 
+    # Count and display fairness metrics
     fairness_metrics = get_fairness_metrics(y_preds, test_groups, y_test_imputed)
     print("#" * 30, "Fairness metrics", "#" * 30)
     for key in fairness_metrics.keys():
         print('\n' + '#' * 20 + f' {key} ' + '#' * 20)
         print(fairness_metrics[key])
 
+    # Save results to a .pkl file
     save_uncertainty_results_to_file(target_column, imputation_technique, stds, iqr, accuracy, label_stability, fairness_metrics)
 
 

@@ -13,11 +13,12 @@ def impute_df_with_all_techniques(real_data, corrupted_data, target_column, colu
     """
     Impute target_column in corrupted_data with appropriate techniques.
 
-    :param real_data:
-    :param corrupted_data:
-    :param target_column:
-    :param column_type:
-    :param enable_plots:
+    :param real_data: an original dataset without nulls
+    :param corrupted_data: a corrupted dataset with nulls, created based on one of null scenarios
+    :param target_column: a column in corrupted_data, which has simulated nulls
+    :param column_type: categorical or numerical, a type of target_column
+    :param enable_plots: bool, if display plots for analysis or not
+
     :return: a dict, where a key is a name of an imputation technique, value is an imputed datasets with respective techniques
     """
     if column_type == "categorical":
@@ -33,6 +34,7 @@ def impute_df_with_all_techniques(real_data, corrupted_data, target_column, colu
     # Set style for seaborn plots
     sns.set_style("darkgrid")
 
+    # Save a result imputed dataset in imputed_data_dict for each imputation technique
     imputed_data_dict = dict()
     for how_to in how_to_list:
         print("\n" * 4, "#" * 15, f" Impute {target_column} column with {how_to} technique ", "#" * 15)
@@ -68,23 +70,26 @@ def handle_df_nulls(input_data, how, column_names, condition_column=None):
     Input:
     data: dataframe with missing values
     how: processing method, currently supports
-            - 'special': corresponds to 'not applicable' scenario, designates null values as their own special category
-            - 'drop-column' : removes the column with nulls from the dataset
-            - 'drop-rows' : removes all the rows with the nulls values from the dataset
-            - 'predict-by-sklearn' : predict values to impute nulls based on the features in the rows; used for multivariate data
-            - 'impute-by-mode' : impute nulls by mode of the column values without nulls
-            - 'impute-by-mode-trimmed' : the same as 'impute-by-mode', but the column is filtered from nulls,
-            sorted in descending order, and top and bottom k% are removed from it. After that 'impute-by-mode' logic is applied
-            - 'impute-by-mean' : impute nulls by mean of the column values without nulls
-            - 'impute-by-mean-trimmed' : the same as 'impute-by-mean', but the column is filtered from nulls,
-            sorted in descending order, and top and bottom k% are removed from it. After that 'impute-by-mean' logic is applied
-            - 'impute-by-median' : impute nulls by median of the column values without nulls
-            - 'impute-by-median-trimmed' : the same as 'impute-by-median', but the column is filtered from nulls,
-            sorted in descending order, and top and bottom k% are removed from it. After that 'impute-by-median' logic is applied
+        - 'special': corresponds to 'not applicable' scenario, designates null values as their own special category
+        - 'drop-column' : removes the column with nulls from the dataset
+        - 'drop-rows' : removes all the rows with the nulls values from the dataset
+        - 'predict-by-sklearn' : predict values to impute nulls based on the features in the rows; used for multivariate data
+        - 'impute-by-mode' : impute nulls by mode of the column values without nulls
+        - 'impute-by-mode-trimmed' : the same as 'impute-by-mode', but the column is filtered from nulls,
+        sorted in descending order, and top and bottom k% are removed from it. After that 'impute-by-mode' logic is applied
+        - 'impute-by-mean' : impute nulls by mean of the column values without nulls
+        - 'impute-by-mean-trimmed' : the same as 'impute-by-mean', but the column is filtered from nulls,
+        sorted in descending order, and top and bottom k% are removed from it. After that 'impute-by-mean' logic is applied
+        - 'impute-by-median' : impute nulls by median of the column values without nulls
+        - 'impute-by-median-trimmed' : the same as 'impute-by-median', but the column is filtered from nulls,
+        sorted in descending order, and top and bottom k% are removed from it. After that 'impute-by-median' logic is applied
+        - 'impute-by-(mode/mean/median)-conditional' : the same as 'impute-by-(mode/mean/median)',
+        but (mode/mean/median) is counted for each group and each group is imputed with this appropriate (mode/mean/median).
+        Groups are created based on split of a dataset by RAC1P or SEX
     column-names: list of column names, for which the particular techniques needs to be applied
 
     Output:
-    dataframe with processed nulls
+    a dataframe with processed nulls
     """
     data = input_data.copy(deep=True)
 
@@ -134,6 +139,22 @@ def handle_df_nulls(input_data, how, column_names, condition_column=None):
 
 
 def apply_conditional_technique(data, column_names, condition_column, how, get_impute_value):
+    """
+    Function is used in handle_df_nulls() for 'impute-by-(mode/mean/median)-conditional' imputation techniques.
+    It imputes nulls with mean/mode/median in the input dataset for each group.
+    Groups are created based on split of a dataset by condition_column (RAC1P or SEX).
+
+    :param data: a dataset for imputation
+    :param column_names: column names to impute
+    :param condition_column: a conditional column based on which the dataset is split on groups.
+     Data in each of these groups is imputed with appropriate mean/mode/median.
+     In general RAC1P or SEX, but it can be any column, except those, which are in column_names.
+    :param how: a name of imputation technique
+    :param get_impute_value: a function like find_column_mean or find_column_mode etc.,
+    which is used to get values for the nulls imputation
+
+    :return: a dataframe with processed nulls
+    """
     for col in column_names:
         filtered_df = data[~data[col].isnull()][[col, condition_column]].copy(deep=True)
         if col == condition_column:

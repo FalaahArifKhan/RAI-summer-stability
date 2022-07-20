@@ -15,6 +15,9 @@ def get_column_type(column_name):
 
 
 def make_feature_df(data, categorical_columns, numerical_columns):
+    """
+    Return a dataset made by one-hot encoding for categorical columns and concatenate with numerical columns
+    """
     feature_df = pd.get_dummies(data[categorical_columns], columns=categorical_columns)
     for col in numerical_columns:
         if col in data.columns:
@@ -35,6 +38,21 @@ def preprocess_dataset(X_imputed, y_data, categorical_columns = COLUMN_TO_TYPE['
 
 
 def check_conditional_techniques(corrupted_data, target_column):
+    """
+    Return a dict in the next format:
+    {'<key_to_group_stats>': {'RAC1P-1': (<max_value>, '<target_column>-<most_often_occurred_value>'),
+               'RAC1P-2': (<max_value>, '<target_column>-<most_often_occurred_value>'),
+               ...}}
+
+    {'RAC1P': {'RAC1P-1': (2273, 'AGEP-60.0'),
+               'RAC1P-2': (435, 'AGEP-19.0'),
+               ...},
+     'SEX': {'SEX-1': (1473, 'AGEP-19.0'), 'SEX-2': (1623, 'AGEP-60.0')}}
+
+     'RAC1P' and 'SEX' are initial keys to group appropriate statistics.
+
+     This function is used to check correctness of 'impute-by-(mode/mean/median)-conditional' techniques
+    """
     mapping_dict = dict()
     for condition_column in ['SEX', 'RAC1P']:
         mapping_dict[condition_column] = {}
