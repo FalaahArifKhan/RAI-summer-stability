@@ -102,7 +102,7 @@ def get_fairness_metrics(y_preds, test_groups, y_test):
     return fairness_metrics
 
 
-def quantify_uncertainty(target_column, y_data, imputed_data_dict, imputation_technique, n_estimators=10, make_plots=True):
+def quantify_uncertainty(target_column, y_data, imputed_data_dict, imputation_technique, n_estimators=100, make_plots=True):
     """
     Quantify uncertainty for the best model. Display plots for analysis if needed. Save results to a .pkl file
 
@@ -117,19 +117,19 @@ def quantify_uncertainty(target_column, y_data, imputed_data_dict, imputation_te
     # Prepare an imputed dataset and split it on train and test to quantify uncertainty
     X_train_imputed, X_test_imputed, y_train_imputed, y_test_imputed, test_groups = prepare_datasets(imputed_data_dict, imputation_technique, y_data)
 
-    # TODO: use the best model here
-    #  set n_estimators = 100
-    # decision_tree_model = DecisionTreeClassifier(criterion='entropy', max_depth=10, max_features=0.6)
-
     # Set hyper-parameters for the best model
+    ML_baseline_results_df = pd.read_csv(os.path.join('..', 'results', 'ML_baseline_results_df.csv'))
+    hyperparameters_dict = eval(ML_baseline_results_df.loc[ML_baseline_results_df['Model_Name'] == 'DecisionTreeClassifier', 'Model_Best_Params'].iloc[0])
+    decision_tree_model = DecisionTreeClassifier(criterion=hyperparameters_dict['criterion'],
+                                                 max_depth=hyperparameters_dict['max_depth'],
+                                                 max_features=hyperparameters_dict['max_features'])
 
     # TODO: save DecisionTreeClassifier model with its hyper-parameters in file and use here
-    tree_model = XGBClassifier(learning_rate=0.1, max_depth=5, n_estimators=200, objective='binary:logistic')
     boostrap_size = int(0.5 * X_train_imputed.shape[0])
 
     # Quantify uncertainty for the bet model
     ___, uq_results = UQ_by_boostrap(X_train_imputed, y_train_imputed, X_test_imputed, y_test_imputed,
-                                     tree_model, n_estimators,
+                                     decision_tree_model, n_estimators,
                                      boostrap_size, with_replacement=True, verbose=False)
 
     # Count metrics

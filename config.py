@@ -48,92 +48,91 @@ MODELS_CONFIG = [
 ]
 
 # Config with simulated scenarios
-# TODO: rename to for ex. 'Optional_MAR'
 SIMULATED_SCENARIOS_DICT = {
     # "Optional" Type of Nulls
-    'MAR': {
+    'Optional_MAR': {
         'special_values': [2, 3, 4],
         'condition_col': 'MAR',
         'target_col': 'MAR',
         'fraction': 0.3
     },
     # "Not Applicable" Type of Nulls
-    # 'MIL': {
+    # 'Not_Applicable_MIL': {
     #     'special_values': [i for i in range(0, 17)],
     #     'condition_col': 'AGEP',
     #     'target_col': 'MIL',
     #     'fraction': 0.3
     # },
-    'SCHL': {
+    'Not_Applicable_SCHL': {
         'special_values': [i for i in range(0, 3)],
         'condition_col': 'AGEP',
         'target_col': 'SCHL',
         'fraction': 0.3
     },
-    # 'ESP': {
+    # 'Not_Applicable_ESP': {
     #     'special_values': [0],
     #     'condition_col': 'ESP',
     #     'target_col': 'ESP',
     #     'fraction': 0.3
     # },
-    # 'MIG': {
+    # 'Not_Applicable_MIG': {
     #     'special_values': [0],
     #     'condition_col': 'AGEP',
     #     'target_col': 'MIG',
     #     'fraction': 0.3
     # },
-    # 'DREM_not_applic': {
+    # 'Not_Applicable_DREM': {
     #     'special_values': [i for i in range(0, 5)],
     #     'condition_col': 'AGEP',
     #     'target_col': 'DREM',
     #     'fraction': 0.3
     # },
     # "Unknown" Type of Nulls
-    'AGEP': {
+    'Unknown_AGEP': {
         'special_values': (8, 10, 11, 12, 15),
         'condition_col': 'RELP',
         'target_col': 'AGEP',
         'fraction': 0.3
     },
-    # 'NATIVITY': {
+    # 'Unknown_NATIVITY': {
     #     'special_values': (11, 12, 15),
     #     'condition_col': 'RELP',
     #     'target_col': 'NATIVITY',
     #     'fraction': 0.3
     # },
     # "Avoided" Type of Nulls
-    'DIS': {
+    'Avoided_DIS': {
         'special_values': [True],
         'condition_col': 'DIS',
         'target_col': 'DIS',
         'fraction': 0.3
     },
-    # 'DEAR': {
+    # 'Avoided_DEAR': {
     #     'special_values': [True],
     #     'condition_col': 'DEAR',
     #     'target_col': 'DEAR',
     #     'fraction': 0.3
     # },
-    # 'DEYE': {
+    # 'Avoided_DEYE': {
     #     'special_values': [True],
     #     'condition_col': 'DEYE',
     #     'target_col': 'DEYE',
     #     'fraction': 0.3
     # },
-    # 'DREM_avoided': {
+    # 'Avoided_DREM': {
     #     'special_values': [True],
     #     'condition_col': 'DREM',
     #     'target_col': 'DREM',
     #     'fraction': 0.3
     # },
     # "Special" Type of Nulls
-    'SEX': {
+    'Special_SEX': {
         'special_values': [1],
         'condition_col': 'SEX',
         'target_col': 'SEX',
         'fraction': 0.11
     },
-    # 'RAC1P': {
+    # 'Special_RAC1P': {
     #     'special_values': [9],
     #     'condition_col': 'RAC1P',
     #     'target_col': 'RAC1P',

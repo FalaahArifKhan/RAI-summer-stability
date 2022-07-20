@@ -163,24 +163,29 @@ def apply_conditional_technique(data, column_names, condition_column, how, get_i
                   f"Skip {how} technique for {col} column\n\n\n")
             continue
 
-        # TODO: use AGEP_categorical instead of this if-statement
+        # When condition_column = 'AGEP', we want to create two groups based on threshold_age.
+        # To split based on AGEP we need to create a technical column AGEP_categorical, which value is 0 or 1.
+        # 0 in AGEP_categorical means that value in AGEP column is < threshold_age;
+        # 1 in AGEP_categorical means that value in AGEP column is >= threshold_age
         if condition_column == 'AGEP':
             threshold_age = 40
-            fillna_val_less = get_impute_value(filtered_df[filtered_df[condition_column] < threshold_age][col].values)
-            fillna_val_more = get_impute_value(filtered_df[filtered_df[condition_column] >= threshold_age][col].values)
-            for idx, fillna_val in enumerate(fillna_val_less, fillna_val_more):
-                sign = "<" if idx == 0 else ">="
-                print(f"Impute {col} with value {fillna_val}, where {condition_column} {sign} {threshold_age}")
-                data[col] = data.groupby(condition_column)[col].transform(lambda x: x.fillna(fillna_val))
-        else:
-            mapping_dict = dict()
-            for val in filtered_df[condition_column].unique():
-                fillna_val = get_impute_value(filtered_df[filtered_df[condition_column] == val][col].values)
-                print(f"Impute {col} with value {fillna_val}, where {condition_column} == {val}")
-                mapping_dict[val] = fillna_val
+            filtered_df[condition_column + '_categorical'] = filtered_df[condition_column].apply(lambda x: int(x >= threshold_age))
+            data[condition_column + '_categorical'] = data[condition_column].apply(lambda x: int(x >= threshold_age))
+            condition_column = condition_column + '_categorical'
 
-            missing_mask = data[col].isna()
-            data.loc[missing_mask, col] = data.loc[missing_mask, condition_column].map(mapping_dict)
+        # For each group add a value, which will be used to impute, to mapping_dict.
+        # Groups are splits of the input dataset based on condition_column
+        mapping_dict = dict()
+        for val in filtered_df[condition_column].unique():
+            fillna_val = get_impute_value(filtered_df[filtered_df[condition_column] == val][col].values)
+            print(f"Impute {col} with value {fillna_val}, where {condition_column} == {val}")
+            mapping_dict[val] = fillna_val
+
+        missing_mask = data[col].isna()
+        data.loc[missing_mask, col] = data.loc[missing_mask, condition_column].map(mapping_dict)
+        # Remove the technical column
+        if condition_column == 'AGEP_categorical':
+            data.drop(condition_column, axis=1, inplace=True)
     return data
 
 
