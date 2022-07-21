@@ -61,7 +61,7 @@ def count_prediction_stats(y_test, uq_results):
     results = pd.DataFrame(uq_results).transpose()
     means = results.mean().values
     stds = results.std().values
-    iqr = sp.stats.iqr(results,axis=0)
+    iqr = sp.stats.iqr(results, axis=0)
 
     y_preds = np.array([int(x<0.5) for x in results.mean().values])
     accuracy = np.mean(np.array([y_preds[i] == y_test[i] for i in range(len(y_test))]))
@@ -102,7 +102,7 @@ def get_fairness_metrics(y_preds, test_groups, y_test):
     return fairness_metrics
 
 
-def quantify_uncertainty(null_scenario_name, y_data, imputed_data_dict, imputation_technique, n_estimators=100, make_plots=True):
+def quantify_uncertainty(null_scenario_name, y_data, imputed_data_dict, imputation_technique, n_estimators=200, make_plots=True):
     """
     Quantify uncertainty for the best model. Display plots for analysis if needed. Save results to a .pkl file
 
@@ -156,16 +156,10 @@ def quantify_uncertainty(null_scenario_name, y_data, imputed_data_dict, imputati
 def prepare_datasets(imputed_data_dict, imputation_technique, y_data):
     # TODO: add documentation here
     X_imputed = imputed_data_dict[imputation_technique]
-
     # Also dropping rows from the label
     y_data_imputed = y_data.iloc[X_imputed.index].copy(deep=True)
 
-    # For computing fairness-related metrics
-    # TODO: create test_groups after using preprocess_dataset()
-    _, X_test, _, _ = train_test_split(X_imputed, y_data_imputed, test_size=0.2, random_state=SEED)
-    test_groups = load_groups_of_interest(os.path.join('..', 'groups.json'), X_test)
-
-    X_train_imputed, y_train_imputed, X_test_imputed, y_test_imputed = preprocess_dataset(X_imputed, y_data_imputed)
+    X_train_imputed, y_train_imputed, X_test_imputed, y_test_imputed, test_groups = preprocess_dataset(X_imputed, y_data_imputed)
     # TODO: why do we need X_val_imputed for uncertainty analysis?
     print('X_train_imputed.shape: ', X_train_imputed.shape)
     print('X_test_imputed.shape: ', X_test_imputed.shape)
@@ -203,16 +197,11 @@ def display_result_plots(null_scenario_name, imputation_techniques):
         with open(os.path.join('..', 'results', null_scenario_name, filename), 'rb') as file:
             results[imputation_technique] = pickle.load(file)
 
-    y_metric = ['SPD_Race', 'SPD_Sex', 'SPD_Race_Sex']
-    display_uncertainty_plot(results,
-                             x_metric = 'Label_stability',
-                             y_metric = y_metric)
-    display_uncertainty_plot(results,
-                             x_metric = 'Accuracy',
-                             y_metric = y_metric)
-    display_uncertainty_plot(results,
-                             x_metric = 'SD',
-                             y_metric = y_metric)
+    y_metrics = ['SPD_Race', 'SPD_Sex', 'SPD_Race_Sex']
+    x_metrics = ['Label_stability', 'Accuracy', 'SD']
+    for x_metric in x_metrics:
+        for y_metric in y_metrics:
+            display_uncertainty_plot(results, x_metric, y_metric)
 
 
 def display_uncertainty_plot(results, x_metric, y_metric):
@@ -220,31 +209,16 @@ def display_uncertainty_plot(results, x_metric, y_metric):
     set_size(15, 8, ax)
 
     # List of all markers -- https://matplotlib.org/stable/api/markers_api.html
-    markers = ['.', 'o', '+', '>', '1', 's', 'x', '^', 'D', 'P', '*', '|']
+    markers = ['.', 'o', '+', '*', '|', '>', '^', 'v', '1', 's', 'x', 'D', 'P', 'H']
     techniques = results.keys()
-    save_color = True
-    colors = []
     shapes = []
     for idx, technique in enumerate(techniques):
-        a = ax.scatter(results[technique][x_metric], results[technique][y_metric[0]], label="Race", marker=markers[idx], c='r')
-        b = ax.scatter(results[technique][x_metric], results[technique][y_metric[1]], label="Sex", marker=markers[idx], c='y')
-        c = ax.scatter(results[technique][x_metric], results[technique][y_metric[2]], label="Race_Sex", marker=markers[idx], c='b')
+        a = ax.scatter(results[technique][x_metric], results[technique][y_metric], label="Race", marker=markers[idx], s=100)
         shapes.append(a)
-
-        if save_color:
-            colors.append(a)
-            colors.append(b)
-            colors.append(c)
-            save_color = False
 
     plt.xlabel(x_metric)
     plt.ylabel("SPD_difference")
-    plt.title(x_metric, fontsize=20)
-    ax.legend(colors, ['Race', 'Sex', 'Race_Sex'], fontsize=12, loc='upper center', title='Colors')
-
-    # Create the second legend and add the artist manually.
-    from matplotlib.legend import Legend
-    leg = Legend(ax, shapes, techniques, fontsize=12, title='Markers')
-    ax.add_artist(leg)
+    plt.title(f'{x_metric} [{y_metric}]', fontsize=20)
+    ax.legend(shapes, techniques, fontsize=12, title='Markers')
 
     plt.show()

@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -5,6 +7,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 from config import COLUMN_TO_TYPE, SEED
+from utils.analysis_helper import load_groups_of_interest
 
 
 def get_column_type(column_name):
@@ -27,15 +30,24 @@ def make_feature_df(data, categorical_columns, numerical_columns):
 
 def preprocess_dataset(X_imputed, y_data, categorical_columns = COLUMN_TO_TYPE['categorical'],
                        numerical_columns = COLUMN_TO_TYPE['numerical']):
-    X_features = make_feature_df(X_imputed, categorical_columns, numerical_columns)
     # TODO: move make_feature_df() below after train_test_split()
-    X_train_features, X_test_features, y_train, y_test = train_test_split(X_features, y_data, test_size=0.2, random_state=SEED)
+    X_train, X_test, y_train, y_test = train_test_split(X_imputed, y_data, test_size=0.2, random_state=SEED)
+
+    # For computing fairness-related metrics
+    test_groups = load_groups_of_interest(os.path.join('..', 'groups.json'), X_test)
+
+    X_train_features = make_feature_df(X_train, categorical_columns, numerical_columns)
+    X_test_features = make_feature_df(X_test, categorical_columns, numerical_columns)
+    for col in X_train_features.columns:
+        if col not in X_test_features.columns:
+            print(f'WARNING: {col} column is not in X_test_features.columns. Add it to X_test_features and set it to zero')
+            X_test_features[col] = 0
 
     scaler = StandardScaler()
     X_train_features = scaler.fit_transform(X_train_features)
     X_test_features = scaler.transform(X_test_features)
 
-    return X_train_features, y_train, X_test_features, y_test
+    return X_train_features, y_train, X_test_features, y_test, test_groups
 
 
 def check_conditional_techniques(corrupted_data, target_column):
