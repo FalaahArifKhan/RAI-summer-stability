@@ -69,8 +69,7 @@ def load_groups_of_interest(filename, X_test_df):
         
         res['advantaged'] = group_info[group_type]['advantaged']
         res['disadvantaged'] = group_info[group_type]['disadvantaged']
-        
-        
+
         test_groups[group_type] = res
      
     # Intersectional groups

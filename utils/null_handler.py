@@ -38,7 +38,7 @@ def evaluate_imputation(real, imputed, corrupted, column_names):
     return metrics
 
 
-def impute_df_with_all_techniques(real_data, corrupted_data, target_column, column_type, null_scenario_name, enable_plots=True):
+def impute_df_with_all_techniques(real_data, corrupted_data, target_column, column_type, null_scenario_name, enable_plots=False):
     """
     Impute target_column in corrupted_data with appropriate techniques.
 

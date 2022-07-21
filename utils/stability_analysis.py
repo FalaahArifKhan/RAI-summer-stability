@@ -154,7 +154,12 @@ def quantify_uncertainty(null_scenario_name, y_data, imputed_data_dict, imputati
 
 
 def prepare_datasets(imputed_data_dict, imputation_technique, y_data):
-    # TODO: add documentation here
+    """
+    Prepare train and test imputation datasets.
+
+    :return: train and test imputation datasets,
+        and test_groups -- advantaged and disadvantaged groups for computing fairness-related metrics
+    """
     X_imputed = imputed_data_dict[imputation_technique]
     # Also dropping rows from the label
     y_data_imputed = y_data.iloc[X_imputed.index].copy(deep=True)
