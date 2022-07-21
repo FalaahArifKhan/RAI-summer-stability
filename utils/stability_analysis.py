@@ -102,11 +102,11 @@ def get_fairness_metrics(y_preds, test_groups, y_test):
     return fairness_metrics
 
 
-def quantify_uncertainty(target_column, y_data, imputed_data_dict, imputation_technique, n_estimators=100, make_plots=True):
+def quantify_uncertainty(null_scenario_name, y_data, imputed_data_dict, imputation_technique, n_estimators=100, make_plots=True):
     """
     Quantify uncertainty for the best model. Display plots for analysis if needed. Save results to a .pkl file
 
-    :param target_column: a name of target column, nulls in which were imputed. Just used to name a result .pkl file
+    :param null_scenario_name: a name of null simulation method. Just used to name a result .pkl file
     :param y_data:  y dataset, is used to create y_train_imputed, y_test_imputed
     :param imputed_data_dict: a dict where key is a name of imputation technique, value is a dataset imputed with that technique
     :param imputation_technique: a name of imputation technique to get an appropriate imputed dataset
@@ -117,14 +117,12 @@ def quantify_uncertainty(target_column, y_data, imputed_data_dict, imputation_te
     # Prepare an imputed dataset and split it on train and test to quantify uncertainty
     X_train_imputed, X_test_imputed, y_train_imputed, y_test_imputed, test_groups = prepare_datasets(imputed_data_dict, imputation_technique, y_data)
 
-    # Set hyper-parameters for the best model
-    ML_baseline_results_df = pd.read_csv(os.path.join('..', 'results', 'ML_baseline_results_df.csv'))
-    hyperparameters_dict = eval(ML_baseline_results_df.loc[ML_baseline_results_df['Model_Name'] == 'DecisionTreeClassifier', 'Model_Best_Params'].iloc[0])
+    # Set hyper-parameters for the best model. Use hyper-parameters, which were tuned on a drop-column dataset
+    ML_drop_column_results_df = pd.read_csv(os.path.join('..', 'results', null_scenario_name, f'{null_scenario_name}_ML_drop_column_results_df.csv'))
+    hyperparameters_dict = eval(ML_drop_column_results_df.loc[ML_drop_column_results_df['Model_Name'] == 'DecisionTreeClassifier', 'Model_Best_Params'].iloc[0])
     decision_tree_model = DecisionTreeClassifier(criterion=hyperparameters_dict['criterion'],
                                                  max_depth=hyperparameters_dict['max_depth'],
                                                  max_features=hyperparameters_dict['max_features'])
-
-    # TODO: save DecisionTreeClassifier model with its hyper-parameters in file and use here
     boostrap_size = int(0.5 * X_train_imputed.shape[0])
 
     # Quantify uncertainty for the bet model
@@ -152,7 +150,7 @@ def quantify_uncertainty(target_column, y_data, imputed_data_dict, imputation_te
         print(fairness_metrics[key])
 
     # Save results to a .pkl file
-    save_uncertainty_results_to_file(target_column, imputation_technique, stds, iqr, accuracy, label_stability, fairness_metrics)
+    save_uncertainty_results_to_file(null_scenario_name, imputation_technique, stds, iqr, accuracy, label_stability, fairness_metrics)
 
 
 def prepare_datasets(imputed_data_dict, imputation_technique, y_data):
@@ -167,18 +165,15 @@ def prepare_datasets(imputed_data_dict, imputation_technique, y_data):
     _, X_test, _, _ = train_test_split(X_imputed, y_data_imputed, test_size=0.2, random_state=SEED)
     test_groups = load_groups_of_interest(os.path.join('..', 'groups.json'), X_test)
 
-    X_train_imputed_, y_train_imputed_, X_test_imputed, y_test_imputed = preprocess_dataset(X_imputed, y_data_imputed)
+    X_train_imputed, y_train_imputed, X_test_imputed, y_test_imputed = preprocess_dataset(X_imputed, y_data_imputed)
     # TODO: why do we need X_val_imputed for uncertainty analysis?
-    X_train_imputed, X_val_imputed, y_train_imputed, y_val_imputed = train_test_split(X_train_imputed_, y_train_imputed_,
-                                                                                      test_size=0.25, random_state=SEED)
     print('X_train_imputed.shape: ', X_train_imputed.shape)
-    print('X_val_imputed.shape: ', X_val_imputed.shape)
     print('X_test_imputed.shape: ', X_test_imputed.shape)
 
     return X_train_imputed, X_test_imputed, y_train_imputed, y_test_imputed, test_groups
 
 
-def save_uncertainty_results_to_file(target_column, imputation_technique, stds, iqr, accuracy, label_stability, fairness_metrics):
+def save_uncertainty_results_to_file(null_scenario_name, imputation_technique, stds, iqr, accuracy, label_stability, fairness_metrics):
     metrics_to_report = {}
     metrics_to_report['Accuracy'] = accuracy
     metrics_to_report['Label_stability'] = [np.mean(label_stability)]
@@ -192,20 +187,20 @@ def save_uncertainty_results_to_file(target_column, imputation_technique, stds, 
     metrics_to_report['EO_Race_Sex'] = [fairness_metrics['Equal_Opportunity']['Race_Sex'].loc['Equal_Opportunity']]
     pd.DataFrame(metrics_to_report)
 
-    dir_path = os.path.join('..', 'results', f'{target_column}_column')
+    dir_path = os.path.join('..', 'results', null_scenario_name)
     os.makedirs(dir_path, exist_ok=True)
 
-    filename = f"{DATASET_CONFIG['state'][0]}_{DATASET_CONFIG['year']}_{target_column}_{imputation_technique.replace('-', '_')}.pkl"
+    filename = f"{DATASET_CONFIG['state'][0]}_{DATASET_CONFIG['year']}_{null_scenario_name}_{imputation_technique.replace('-', '_')}.pkl"
     f = open(os.path.join(dir_path, filename), "wb")
     pickle.dump(metrics_to_report,f)
     f.close()
 
 
-def display_result_plots(target_column, imputation_techniques):
+def display_result_plots(null_scenario_name, imputation_techniques):
     results = dict()
     for imputation_technique in imputation_techniques:
-        filename = f"{DATASET_CONFIG['state'][0]}_{DATASET_CONFIG['year']}_{target_column}_{imputation_technique.replace('-', '_')}.pkl"
-        with open(os.path.join('..', 'results', f'{target_column}_column', filename), 'rb') as file:
+        filename = f"{DATASET_CONFIG['state'][0]}_{DATASET_CONFIG['year']}_{null_scenario_name}_{imputation_technique.replace('-', '_')}.pkl"
+        with open(os.path.join('..', 'results', null_scenario_name, filename), 'rb') as file:
             results[imputation_technique] = pickle.load(file)
 
     y_metric = ['SPD_Race', 'SPD_Sex', 'SPD_Race_Sex']

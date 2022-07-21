@@ -1,16 +1,44 @@
+import os
+import json
 import pandas as pd
 import numpy as np
 import seaborn as sns
 
 from scipy import stats
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import mean_absolute_error as MAE
+from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
 from sklearn.experimental import enable_iterative_imputer # Required for IterativeImputer
 from sklearn.impute import IterativeImputer
 
 from utils.EDA_utils import imputed_nulls_analysis
+from utils.simple_utils import get_column_type
 from config import SEED
 
 
-def impute_df_with_all_techniques(real_data, corrupted_data, target_column, column_type, enable_plots=True):
+def evaluate_imputation(real, imputed, corrupted, column_names):
+    metrics = []
+    for column_name in column_names:
+        column_type = get_column_type(column_name)
+
+        indexes = corrupted[column_name].isna()
+        true = real.loc[indexes, column_name]
+        pred = imputed.loc[indexes, column_name]
+
+        if column_type == 'numerical':
+            mae = MAE(true, pred)
+            print('MAE for regression - {}: {:.1f}'.format(column_name, mae))
+            metrics.append(mae)
+        else:
+            conf_matrix = confusion_matrix(true, pred)
+            accuracy = conf_matrix.trace() / conf_matrix.sum()
+            print('Accuracy for regression - {}: {:.2f}'.format(column_name, accuracy))
+            metrics.append(accuracy)
+    return metrics
+
+
+def impute_df_with_all_techniques(real_data, corrupted_data, target_column, column_type, null_scenario_name, enable_plots=True):
     """
     Impute target_column in corrupted_data with appropriate techniques.
 
@@ -18,15 +46,16 @@ def impute_df_with_all_techniques(real_data, corrupted_data, target_column, colu
     :param corrupted_data: a corrupted dataset with nulls, created based on one of null scenarios
     :param target_column: a column in corrupted_data, which has simulated nulls
     :param column_type: categorical or numerical, a type of target_column
+    :param null_scenario_name: a name of null simulation method
     :param enable_plots: bool, if display plots for analysis or not
 
     :return: a dict, where a key is a name of an imputation technique, value is an imputed datasets with respective techniques
     """
     if column_type == "categorical":
-        how_to_list = ["drop-column", "drop-rows", "predict-by-sklearn",
+        how_to_list = ["drop-column", "drop-rows", "predict-by-sklearn", "kNN", "regression",
                        "impute-by-mode", "impute-by-mode-trimmed", "impute-by-mode-conditional"]
     elif column_type == "numerical":
-        how_to_list = ["drop-column", "drop-rows", "predict-by-sklearn",
+        how_to_list = ["drop-column", "drop-rows", "predict-by-sklearn", "kNN", "regression",
                        "impute-by-mean", "impute-by-mean-trimmed", "impute-by-mean-conditional",
                        "impute-by-median", "impute-by-median-trimmed", "impute-by-median-conditional"]
     else:
@@ -37,10 +66,11 @@ def impute_df_with_all_techniques(real_data, corrupted_data, target_column, colu
 
     # Save a result imputed dataset in imputed_data_dict for each imputation technique
     imputed_data_dict = dict()
+    technique_metrics_dict = dict()
     for how_to in how_to_list:
         print("\n" * 4, "#" * 15, f" Impute {target_column} column with {how_to} technique ", "#" * 15)
         imputed_data = None
-        if 'conditional' in how_to:
+        if 'conditional' in how_to and how_to not in ("drop-column", "drop-rows"):
             for condition_column in ["SEX", "RAC1P"]:
                 # When condition_column == target_column, imputation based on subgroups does not make sense
                 if condition_column == target_column:
@@ -49,6 +79,10 @@ def impute_df_with_all_techniques(real_data, corrupted_data, target_column, colu
                                                how_to,
                                                condition_column=condition_column,
                                                column_names=[target_column])
+                # Measure imputation metrics
+                metrics = evaluate_imputation(real_data, imputed_data, corrupted_data, [target_column])
+                technique_metrics_dict[f'{how_to}_{condition_column}'] = metrics[0]
+
                 imputed_data_dict[f'{how_to}_{condition_column}'] = imputed_data
 
         else:
@@ -56,13 +90,21 @@ def impute_df_with_all_techniques(real_data, corrupted_data, target_column, colu
                                            how_to,
                                            condition_column=None,
                                            column_names=[target_column])
+            # Measure imputation metrics. We can not measure them for "drop-column" and "drop-rows" techniques
+            if how_to not in ("drop-column", "drop-rows"):
+                metrics = evaluate_imputation(real_data, imputed_data, corrupted_data, [target_column])
+                technique_metrics_dict[how_to] = metrics[0]
             imputed_data_dict[how_to] = imputed_data
 
         # Make plots for other techniques except "drop-column", since we dropped the column based on this technique
         if enable_plots and how_to != "drop-column":
             imputed_nulls_analysis(real_data, imputed_data, corrupted_data, target_col=target_column)
 
-    return imputed_data_dict
+    # Save metrics of imputations techniques to a .json file for future analysis
+    technique_metrics_dict = {k: v for k, v in sorted(technique_metrics_dict.items(), key=lambda item: item[1])}
+    with open(os.path.join('..', 'results', null_scenario_name, f'{null_scenario_name}_imputation_techniques_metrics.json'), 'w') as f:
+        json.dump(technique_metrics_dict, f, indent=4)
+    return imputed_data_dict, technique_metrics_dict
 
 
 def handle_df_nulls(input_data, how, column_names, condition_column=None):
@@ -110,6 +152,10 @@ def handle_df_nulls(input_data, how, column_names, condition_column=None):
         imputed = imputer.fit_transform(data)
         data = pd.DataFrame(imputed, columns=data.columns)
         data[column_names] = data[column_names].round()
+    elif how == 'regression':
+        data = regression_imputation(data, column_names)
+    elif how == 'kNN':
+        data = kNN_imputation(data, column_names)
     else:
         get_impute_value = None
         if how == 'special':
@@ -186,6 +232,56 @@ def apply_conditional_technique(data, column_names, condition_column, how, get_i
         # Remove the technical column
         if condition_column == 'AGEP_categorical':
             data.drop(condition_column, axis=1, inplace=True)
+    return data
+
+
+def regression_imputation(input_data, column_names):
+    data = input_data.copy(deep=True)
+    for column_name in column_names:
+        column_type = get_column_type(column_name)
+
+        other_columns = [col for col in data.columns if col != column_name]
+        indexes = data[column_name].isna()
+
+        not_null_df = data[~indexes]
+        null_df = data[indexes]
+
+        X_train = not_null_df[other_columns].to_numpy()
+        y_train = not_null_df[column_name].to_numpy()
+
+        X_pred = null_df[other_columns].to_numpy()
+
+        if column_type == 'numerical':
+            model = LinearRegression().fit(X_train, y_train)
+        else:
+            model = LogisticRegression(multi_class='multinomial').fit(X_train, y_train)
+
+        data.loc[indexes, column_name] = model.predict(X_pred)
+    return data
+
+
+def kNN_imputation(input_data, column_names, n_neighbors=4, weights='distance'):
+    data = input_data.copy(deep=True)
+    for column_name in column_names:
+        column_type = get_column_type(column_name)
+
+        other_columns = [col for col in data.columns if col != column_name]
+        indexes = data[column_name].isna()
+
+        not_null_df = data[~indexes]
+        null_df = data[indexes]
+
+        X_train = not_null_df[other_columns].to_numpy()
+        y_train = not_null_df[column_name].to_numpy()
+
+        X_pred = null_df[other_columns].to_numpy()
+
+        if column_type == 'numerical':
+            model = KNeighborsRegressor(n_neighbors=n_neighbors, weights=weights).fit(X_train, y_train)
+        else:
+            model = KNeighborsClassifier(n_neighbors=n_neighbors, weights=weights).fit(X_train, y_train)
+
+        data.loc[indexes, column_name] = model.predict(X_pred)
     return data
 
 
