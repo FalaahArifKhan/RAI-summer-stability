@@ -116,7 +116,6 @@ def quantify_uncertainty(null_scenario_name, y_data, imputed_data_dict, imputati
     """
     # Prepare an imputed dataset and split it on train and test to quantify uncertainty
     X_train_imputed, X_test_imputed, y_train_imputed, y_test_imputed, test_groups = prepare_datasets(imputed_data_dict, imputation_technique, y_data)
-    print('test_groups -- ', test_groups)
 
     # Set hyper-parameters for the best model. Use hyper-parameters, which were tuned on a drop-column dataset
     ML_drop_column_results_df = pd.read_csv(os.path.join('..', 'results', null_scenario_name, f'{null_scenario_name}_ML_drop_column_results_df.csv'))
@@ -137,11 +136,11 @@ def quantify_uncertainty(null_scenario_name, y_data, imputed_data_dict, imputati
 
     # Display plots if needed
     if make_plots:
-        plot_generic(means, stds, "Mean of probability", "Standard deviation", x_lim=1.0, y_lim=0.5, plot_title="Probability mean vs Standard deviation")
-        plot_generic(stds, label_stability, "Standard deviation", "Label stability", x_lim=0.5, y_lim=1.0, plot_title="Standard deviation vs Label stability")
-        plot_generic(means, label_stability, "Mean", "Label stability", x_lim=1.0, y_lim=1.0, plot_title="Mean vs Label stability")
-        plot_generic(per_sample_accuracy, stds, "Accuracy", "Standard deviation", x_lim=1.0, y_lim=0.5, plot_title="Accuracy vs Standard deviation")
-        plot_generic(per_sample_accuracy, iqr, "Accuracy", "Inter quantile range", x_lim=1.0, y_lim=1.0, plot_title="Accuracy vs Inter quantile range")
+        plot_generic(means, stds, "Mean of probability", "Standard deviation", x_lim=1.01, y_lim=0.5, plot_title="Probability mean vs Standard deviation")
+        plot_generic(stds, label_stability, "Standard deviation", "Label stability", x_lim=0.5, y_lim=1.01, plot_title="Standard deviation vs Label stability")
+        plot_generic(means, label_stability, "Mean", "Label stability", x_lim=1.01, y_lim=1.01, plot_title="Mean vs Label stability")
+        plot_generic(per_sample_accuracy, stds, "Accuracy", "Standard deviation", x_lim=1.01, y_lim=0.5, plot_title="Accuracy vs Standard deviation")
+        plot_generic(per_sample_accuracy, iqr, "Accuracy", "Inter quantile range", x_lim=1.01, y_lim=1.01, plot_title="Accuracy vs Inter quantile range")
 
     # Count and display fairness metrics
     fairness_metrics = get_fairness_metrics(y_preds, test_groups, y_test_imputed)
