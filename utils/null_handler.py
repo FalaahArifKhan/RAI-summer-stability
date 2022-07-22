@@ -151,7 +151,6 @@ def handle_df_nulls(input_data, how, column_names, condition_column=None):
                                    max_value=input_data[column_names[0]].max())
         imputed = imputer.fit_transform(data)
         data = pd.DataFrame(imputed, columns=data.columns)
-        data[column_names] = data[column_names].round()
     elif how == 'regression':
         data = regression_imputation(data, column_names)
     elif how == 'kNN':
@@ -182,6 +181,9 @@ def handle_df_nulls(input_data, how, column_names, condition_column=None):
                 vals[col] = get_impute_value(filtered_df[col].values)
             print("Impute values: ", vals)
             data.fillna(value=vals, inplace=True)
+
+    if how != 'drop-column':
+        data[column_names] = data[column_names].round()
     return data
 
 

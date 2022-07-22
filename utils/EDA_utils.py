@@ -13,9 +13,11 @@ def sns_set_size(height, width):
     sns.set(rc={'figure.figsize':(width, height)})
 
 
-def plot_generic(x, y, xlabel, ylabel, plot_title):
+def plot_generic(x, y, xlabel, ylabel, x_lim, y_lim, plot_title):
     plt.figure(figsize=(20,10))
     plt.scatter(x, y)
+    plt.xlim(0, x_lim)
+    plt.ylim(0, y_lim)
     plt.xlabel(xlabel, fontsize=14)
     plt.ylabel(ylabel, fontsize=14)
     plt.title(plot_title, fontsize=20)

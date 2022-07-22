@@ -116,6 +116,7 @@ def quantify_uncertainty(null_scenario_name, y_data, imputed_data_dict, imputati
     """
     # Prepare an imputed dataset and split it on train and test to quantify uncertainty
     X_train_imputed, X_test_imputed, y_train_imputed, y_test_imputed, test_groups = prepare_datasets(imputed_data_dict, imputation_technique, y_data)
+    print('test_groups -- ', test_groups)
 
     # Set hyper-parameters for the best model. Use hyper-parameters, which were tuned on a drop-column dataset
     ML_drop_column_results_df = pd.read_csv(os.path.join('..', 'results', null_scenario_name, f'{null_scenario_name}_ML_drop_column_results_df.csv'))
@@ -123,7 +124,7 @@ def quantify_uncertainty(null_scenario_name, y_data, imputed_data_dict, imputati
     decision_tree_model = DecisionTreeClassifier(criterion=hyperparameters_dict['criterion'],
                                                  max_depth=hyperparameters_dict['max_depth'],
                                                  max_features=hyperparameters_dict['max_features'])
-    boostrap_size = int(0.5 * X_train_imputed.shape[0])
+    boostrap_size = int(BOOTSTRAP_FRACTION * X_train_imputed.shape[0])
 
     # Quantify uncertainty for the bet model
     ___, uq_results = UQ_by_boostrap(X_train_imputed, y_train_imputed, X_test_imputed, y_test_imputed,
@@ -136,11 +137,11 @@ def quantify_uncertainty(null_scenario_name, y_data, imputed_data_dict, imputati
 
     # Display plots if needed
     if make_plots:
-        plot_generic(means, stds, "Mean of probability", "Standard deviation", "Probability mean vs Standard deviation")
-        plot_generic(stds, label_stability, "Standard deviation", "Label stability", "Standard deviation vs Label stability")
-        plot_generic(means, label_stability, "Mean", "Label stability", "Mean vs Label stability")
-        plot_generic(per_sample_accuracy, stds, "Accuracy", "Standard deviation", "Accuracy vs Standard deviation")
-        plot_generic(per_sample_accuracy, iqr, "Accuracy", "Inter quantile range", "Accuracy vs Inter quantile range")
+        plot_generic(means, stds, "Mean of probability", "Standard deviation", x_lim=1.0, y_lim=0.5, plot_title="Probability mean vs Standard deviation")
+        plot_generic(stds, label_stability, "Standard deviation", "Label stability", x_lim=0.5, y_lim=1.0, plot_title="Standard deviation vs Label stability")
+        plot_generic(means, label_stability, "Mean", "Label stability", x_lim=1.0, y_lim=1.0, plot_title="Mean vs Label stability")
+        plot_generic(per_sample_accuracy, stds, "Accuracy", "Standard deviation", x_lim=1.0, y_lim=0.5, plot_title="Accuracy vs Standard deviation")
+        plot_generic(per_sample_accuracy, iqr, "Accuracy", "Inter quantile range", x_lim=1.0, y_lim=1.0, plot_title="Accuracy vs Inter quantile range")
 
     # Count and display fairness metrics
     fairness_metrics = get_fairness_metrics(y_preds, test_groups, y_test_imputed)
@@ -202,14 +203,15 @@ def display_result_plots(null_scenario_name, imputation_techniques):
         with open(os.path.join('..', 'results', null_scenario_name, filename), 'rb') as file:
             results[imputation_technique] = pickle.load(file)
 
-    y_metrics = ['SPD_Race', 'SPD_Sex', 'SPD_Race_Sex']
+    y_metrics = ['SPD_Race', 'SPD_Sex', 'SPD_Race_Sex', 'EO_Race', 'EO_Sex', 'EO_Race_Sex']
     x_metrics = ['Label_stability', 'Accuracy', 'SD']
     for x_metric in x_metrics:
         for y_metric in y_metrics:
-            display_uncertainty_plot(results, x_metric, y_metric)
+            x_lim = 0.3 if x_metric == 'SD' else 1.0
+            display_uncertainty_plot(results, x_metric, y_metric, x_lim)
 
 
-def display_uncertainty_plot(results, x_metric, y_metric):
+def display_uncertainty_plot(results, x_metric, y_metric, x_lim):
     fig, ax = plt.subplots()
     set_size(15, 8, ax)
 
@@ -218,11 +220,12 @@ def display_uncertainty_plot(results, x_metric, y_metric):
     techniques = results.keys()
     shapes = []
     for idx, technique in enumerate(techniques):
-        a = ax.scatter(results[technique][x_metric], results[technique][y_metric], label="Race", marker=markers[idx], s=100)
+        a = ax.scatter(results[technique][x_metric], results[technique][y_metric], marker=markers[idx], s=100)
         shapes.append(a)
 
     plt.xlabel(x_metric)
-    plt.ylabel("SPD_difference")
+    plt.ylabel(y_metric)
+    plt.xlim(0, x_lim)
     plt.title(f'{x_metric} [{y_metric}]', fontsize=20)
     ax.legend(shapes, techniques, fontsize=12, title='Markers')
 

@@ -1,13 +1,13 @@
 {
-    "kNN": 10.032835849724345,
-    "regression": 11.235361086038068,
-    "impute-by-mean-conditional_RAC1P": 18.911814776983316,
-    "impute-by-median-conditional_RAC1P": 19.048008171603676,
-    "impute-by-mean-conditional_SEX": 19.349336057201224,
-    "impute-by-mean": 19.417092271024856,
-    "impute-by-mean-trimmed": 19.417092271024856,
-    "impute-by-median": 19.417092271024856,
-    "impute-by-median-trimmed": 19.417092271024856,
-    "impute-by-median-conditional_SEX": 19.44160708205652,
-    "predict-by-sklearn": 26.593803200544773
+    "kNN": 9.526727953694246,
+    "regression": 11.058563159686756,
+    "impute-by-mean-conditional_RAC1P": 18.745318352059925,
+    "impute-by-mean-conditional_SEX": 18.983316309159004,
+    "impute-by-mean": 19.002042900919307,
+    "impute-by-mean-trimmed": 19.002042900919307,
+    "impute-by-median": 19.002042900919307,
+    "impute-by-median-trimmed": 19.002042900919307,
+    "impute-by-median-conditional_RAC1P": 19.0561797752809,
+    "impute-by-median-conditional_SEX": 19.149131767109296,
+    "predict-by-sklearn": 26.217228464419474
 }
