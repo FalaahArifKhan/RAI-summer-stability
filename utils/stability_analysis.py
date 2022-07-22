@@ -64,7 +64,7 @@ def count_prediction_stats(y_test, uq_results):
     iqr = sp.stats.iqr(results, axis=0)
 
     y_preds = np.array([int(x<0.5) for x in results.mean().values])
-    accuracy = np.mean(np.array([y_preds[i] == y_test[i] for i in range(len(y_test))]))
+    accuracy = np.mean(np.array([y_preds[i] == int(y_test[i]) for i in range(len(y_test))]))
 
     return y_preds, results, means, stds, iqr, accuracy
 

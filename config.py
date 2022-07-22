@@ -5,7 +5,7 @@ from folktables import ACSEmployment
 
 
 SEED=10
-BOOTSTRAP_FRACTION = 0.8
+BOOTSTRAP_FRACTION = 1.0
 DATASET_CONFIG = {
     'state': ["NY"],
     'year': '2018',
