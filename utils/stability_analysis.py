@@ -223,7 +223,7 @@ def display_uncertainty_plot(results, x_metric, y_metric, x_lim):
     set_size(15, 8, ax)
 
     # List of all markers -- https://matplotlib.org/stable/api/markers_api.html
-    markers = ['.', 'o', '+', '*', '|', '>', '^', 'v', '1', 's', 'x', 'D', 'P', 'H']
+    markers = ['.', 'o', '+', '*', '|', '<', '>', '^', 'v', '1', 's', 'x', 'D', 'P', 'H']
     techniques = results.keys()
     shapes = []
     for idx, technique in enumerate(techniques):

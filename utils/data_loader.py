@@ -37,6 +37,7 @@ def ACSDataLoader(task, state, year, without_nulls):
 
     return X_data, y
 
+
 def optimize_ACSEmployment(data):
     '''
     Optimizing the dataset size by downcasting categorical columns
