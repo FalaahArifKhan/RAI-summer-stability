@@ -103,7 +103,7 @@ def get_fairness_metrics(y_preds, test_groups, y_test):
     return fairness_metrics
 
 
-def quantify_uncertainty(null_scenario_name, y_data, imputed_data_dict, imputation_technique, n_estimators=20, make_plots=True):
+def quantify_uncertainty(null_scenario_name, y_data, imputed_data_dict, imputation_technique, n_estimators=200, make_plots=True):
     """
     Quantify uncertainty for the best model. Display plots for analysis if needed. Save results to a .pkl file
 
@@ -121,22 +121,21 @@ def quantify_uncertainty(null_scenario_name, y_data, imputed_data_dict, imputati
     # Set hyper-parameters for the best model. Use hyper-parameters, which were tuned on a drop-column dataset
     ML_drop_column_results_df = pd.read_csv(os.path.join('..', 'results', null_scenario_name, f'{null_scenario_name}_ML_drop_column_results_df.csv'))
     hyperparameters_dict = eval(ML_drop_column_results_df.loc[ML_drop_column_results_df['Model_Name'] == 'DecisionTreeClassifier', 'Model_Best_Params'].iloc[0])
-    # decision_tree_model = DecisionTreeClassifier(criterion=hyperparameters_dict['criterion'],
-    #                                              max_depth=hyperparameters_dict['max_depth'],
-    #                                              max_features=hyperparameters_dict['max_features'])
+    decision_tree_model = DecisionTreeClassifier(criterion=hyperparameters_dict['criterion'],
+                                                 max_depth=hyperparameters_dict['max_depth'],
+                                                 max_features=hyperparameters_dict['max_features'])
 
-    # {'learning_rate': 0.1, 'max_depth': 5, 'n_estimators': 300, 'objective': 'binary:logistic'}
-    tree_model = XGBClassifier(
-                    learning_rate=0.1,
-                    max_depth=5,
-                    n_estimators=100,
-                    objective='binary:logistic'
-                )
+    # tree_model = XGBClassifier(
+    #                 learning_rate=0.1,
+    #                 max_depth=5,
+    #                 n_estimators=100,
+    #                 objective='binary:logistic'
+    #             )
     boostrap_size = int(BOOTSTRAP_FRACTION * X_train_imputed.shape[0])
 
     # Quantify uncertainty for the bet model
     ___, uq_results = UQ_by_boostrap(X_train_imputed, y_train_imputed, X_test_imputed, y_test_imputed,
-                                     tree_model, n_estimators,
+                                     decision_tree_model, n_estimators,
                                      boostrap_size, with_replacement=True, verbose=False)
 
     # Count metrics
