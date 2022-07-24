@@ -9,6 +9,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import mean_absolute_error as MAE
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.experimental import enable_iterative_imputer # Required for IterativeImputer
 from sklearn.impute import IterativeImputer
 
@@ -146,9 +147,19 @@ def handle_df_nulls(input_data, how, column_names, condition_column=None):
             return data
 
         # Setting the random_state argument for reproducibility
+        impute_estimator = RandomForestRegressor(
+                                    n_estimators=10,
+                                    max_depth=10,
+                                    bootstrap=True,
+                                    max_samples=0.5,
+                                    n_jobs=2,
+                                    random_state=SEED,
+                                )
         imputer = IterativeImputer(random_state=SEED,
                                    min_value=input_data[column_names[0]].min(),
-                                   max_value=input_data[column_names[0]].max())
+                                   max_value=input_data[column_names[0]].max(),
+                                   estimator=impute_estimator,
+                                   max_iter=20)
         imputed = imputer.fit_transform(data)
         data = pd.DataFrame(imputed, columns=data.columns)
     elif how == 'regression':
