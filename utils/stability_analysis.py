@@ -129,7 +129,7 @@ def quantify_uncertainty(null_scenario_name, y_data, imputed_data_dict, imputati
     tree_model = XGBClassifier(
                     learning_rate=0.1,
                     max_depth=5,
-                    n_estimators=100,
+                    n_estimators=200,
                     objective='binary:logistic'
                 )
     boostrap_size = int(BOOTSTRAP_FRACTION * X_train_imputed.shape[0])
