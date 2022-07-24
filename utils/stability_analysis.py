@@ -129,7 +129,7 @@ def quantify_uncertainty(null_scenario_name, y_data, imputed_data_dict, imputati
     tree_model = XGBClassifier(
                     learning_rate=0.1,
                     max_depth=5,
-                    n_estimators=200,
+                    n_estimators=100,
                     objective='binary:logistic'
                 )
     boostrap_size = int(BOOTSTRAP_FRACTION * X_train_imputed.shape[0])
@@ -174,7 +174,6 @@ def prepare_datasets(imputed_data_dict, imputation_technique, y_data):
     y_data_imputed = y_data.iloc[X_imputed.index].copy(deep=True)
 
     X_train_imputed, y_train_imputed, X_test_imputed, y_test_imputed, test_groups = preprocess_dataset(X_imputed, y_data_imputed)
-    # TODO: why do we need X_val_imputed for uncertainty analysis?
     print('X_train_imputed.shape: ', X_train_imputed.shape)
     print('X_test_imputed.shape: ', X_test_imputed.shape)
 
