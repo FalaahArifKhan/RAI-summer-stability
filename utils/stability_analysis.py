@@ -82,6 +82,7 @@ def get_per_sample_accuracy(y_test, results):
     per_sample_accuracy = []
     for sample in range(len(y_test)):
         per_sample_predictions[sample] =  [int(x<0.5) for x in results[sample].values]
+        # TODO: is it correct to measure label stability in such a way
         label_stability.append(compute_label_stability(per_sample_predictions[sample]))
 
         if y_test[sample] == 1:
