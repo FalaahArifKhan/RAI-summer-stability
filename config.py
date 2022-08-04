@@ -5,6 +5,7 @@ from folktables import ACSEmployment
 
 
 SEED=10
+TEST_SET_FRACTION = 0.2
 BOOTSTRAP_FRACTION = 0.8
 DATASET_CONFIG = {
     'state': ["NY"],
@@ -13,8 +14,8 @@ DATASET_CONFIG = {
 }
 
 COLUMN_TO_TYPE = {
-    "categorical": ['MAR', 'MIL', 'ESP', 'MIG', 'DREM', 'NATIVITY', 'DIS', 'DEAR', 'DEYE', 'SEX', 'RAC1P', 'RELP', 'CIT', 'ANC'],
-    "numerical": ['SCHL', 'AGEP']
+    "categorical": ['SCHL', 'MAR', 'MIL', 'ESP', 'MIG', 'DREM', 'NATIVITY', 'DIS', 'DEAR', 'DEYE', 'SEX', 'RAC1P', 'RELP', 'CIT', 'ANC'],
+    "numerical": ['AGEP']
 }
 
 MODELS_CONFIG = [

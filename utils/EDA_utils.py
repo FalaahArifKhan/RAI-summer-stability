@@ -14,6 +14,7 @@ def sns_set_size(height, width):
 
 
 def plot_generic(x, y, xlabel, ylabel, x_lim, y_lim, plot_title):
+    sns.set_style("darkgrid")
     plt.figure(figsize=(20,10))
     plt.scatter(x, y)
     plt.xlim(0, x_lim)
