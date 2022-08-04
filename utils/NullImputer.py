@@ -4,16 +4,20 @@ from scipy import stats
 
 from utils.null_helpers import *
 
-# TODO: Hanlde mode or mean/median implicitly based on null column type. Override if user passes how='special'.
+# TODO: Handle mode or mean/median implicitly based on null column type.
+# For special, decide which value to impute based on whether the column is categorical or numerical.
 
 class NullImputer():
-    def __init__(self, target_columns, how="mean", trimmed=0, conditional_column=None):
+    def __init__(self, target_columns, how="mean", trimmed=0, conditional_column=None, special_value=None):
         self.how = how
         self.target_columns = target_columns
         self.conditional_column = conditional_column
         self.trimmed = trimmed
         self.mask = None
-        self.values_to_impute = None
+        values_to_impute = {}
+        for col in self.target_columns:
+            values_to_impute[col] = special_value
+        self.values_to_impute = values_to_impute
 
     def fit(self, X, y=None):
         allowed = ["mean", "median", "mode", "special"]
@@ -29,7 +33,11 @@ class NullImputer():
         data = X.copy(deep=True)
 
         if self.how == 'special':
-            get_impute_value = decide_special_category
+            if self.values_to_impute[self.target_columns[0]] !=None :
+                return
+            else:
+                raise ValueError("Special value was not passed during initialization") 
+
         elif self.how == 'mode':
             get_impute_value = find_column_mode
         elif self.how == 'mean':
@@ -59,7 +67,7 @@ class NullImputer():
                     mapping_dict[val] = fillna_val
                 values_to_impute[col] = mapping_dict
 
-        self.values_to_impute= values_to_impute
+        self.values_to_impute = values_to_impute
         return
 
     def transform(self, X, y=None):

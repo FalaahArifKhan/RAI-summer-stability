@@ -48,12 +48,19 @@ def get_sample_rows(data, target_col, fraction):
 
 def decide_special_category(data):
     """
-    Description: Decides which value to designate as a special value, based on the values already in the data
+    Description: Decides which value to designate as a special value, based on the values already in the data (array)
     """
-    if 0 not in data:
-        return 0
-    else:
-        return max(data) + 1
+    data_type = data.dtype
+    # If not numerical, simply set the special value to "special"
+    try:
+        # If data is numerical
+        if 0 not in data:
+            return 0
+        else:
+            return max(data) + 1
+    except:
+        print("Data is not numerical, assigning string category")
+        return data_type("Special")
 
 def find_column_mode(data):
     result = stats.mode(data)
