@@ -25,8 +25,7 @@ class NullPredictor():
             # We will need to binarize categorical target columns
             self.target_transformer[col] = LabelEncoder() if column_type == 'categorical' else None
 
-            # self.base_model[col] = base_classifier(column_type)
-            self.base_model[col] = base_classifier[column_type]
+            self.base_model[col] = base_classifier(column_type)
             self.fitted_model[col] = None
 
     def fit(self, data_with_nulls, y=None):

@@ -13,8 +13,10 @@ from utils.stability_analysis import count_prediction_stats, get_per_sample_accu
 
 
 class StabilityFairnessAnalyzer:
-    def __init__(self, X_data_tpl, y_data_tpl, evaluation_model, imputation_technique, null_scenario_name):
+    def __init__(self, X_data_tpl, y_data_tpl, test_groups, evaluation_model, imputation_technique,
+                 null_scenario_name, n_estimators=200):
         self.imputation_technique = imputation_technique
+        self.n_estimators = n_estimators
         self.null_scenario_name = null_scenario_name
 
         # Prepare an imputed dataset and split it on train and test to quantify uncertainty
@@ -22,14 +24,14 @@ class StabilityFairnessAnalyzer:
         self.y_train, self.y_test = y_data_tpl
 
         self.evaluation_model = evaluation_model
-        self.test_groups = load_groups_of_interest(os.path.join('..', 'groups.json'), self.X_test_imputed)
+        self.test_groups = test_groups
 
-    def measure_metrics(self, n_estimators=200, make_plots=True):
+    def measure_metrics(self, make_plots=True):
         # For computing fairness-related metrics
         boostrap_size = int(BOOTSTRAP_FRACTION * self.X_train_imputed.shape[0])
 
         # Quantify uncertainty for the bet model
-        ___, uq_results = self.UQ_by_boostrap(n_estimators, boostrap_size, with_replacement=True, verbose=False)
+        ___, uq_results = self.UQ_by_boostrap(self.n_estimators, boostrap_size, with_replacement=True, verbose=False)
 
         # Count metrics
         y_preds, results, means, stds, iqr, accuracy = count_prediction_stats(self.y_test.values, uq_results)

@@ -4,6 +4,7 @@ from scipy import stats
 from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
 from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
 
+
 def nulls_simulator(data, target_col, condition_col, special_values, fraction, nan_value=np.nan):
     """
     Description: simulate nulls for the target column in the dataset based on the condition column and its special values.
@@ -74,6 +75,7 @@ def find_column_mean(data):
 def find_column_median(data):
     return np.median(data).round()
 
+
 def base_regressor(column_type):
         if column_type == 'numerical':
             model = LinearRegression()
@@ -84,6 +86,7 @@ def base_regressor(column_type):
                     "Can only support numerical or categorical columns, got column_type={0}".format(column_type))
             model = None
         return model
+
 
 def base_knn(column_type, n_neighbors):
         if column_type == 'numerical':

@@ -28,7 +28,6 @@ class NullImputer():
                     allowed, self.how
                 )
             )
-            return self.data
 
         data = X.copy(deep=True)
 
@@ -63,7 +62,6 @@ class NullImputer():
                 mapping_dict = dict()
                 for val in filtered_df[self.conditional_column].unique():
                     fillna_val = get_impute_value(filtered_df[filtered_df[self.conditional_column] == val][col].values)
-                    #print(f"Need to impute {col} with value {fillna_val}, where {self.conditional_column} == {val}")
                     mapping_dict[val] = fillna_val
                 values_to_impute[col] = mapping_dict
 
@@ -76,7 +74,6 @@ class NullImputer():
             raise ValueError(
                 "Call fit before calling transform!"
             )
-            return data
 
         if self.conditional_column is None:
             for col in self.target_columns:
