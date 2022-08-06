@@ -209,8 +209,11 @@ def display_result_plots(null_scenario_name, imputation_techniques):
     results = dict()
     for imputation_technique in imputation_techniques:
         filename = f"{DATASET_CONFIG['state'][0]}_{DATASET_CONFIG['year']}_{null_scenario_name}_{imputation_technique.replace('-', '_')}.pkl"
-        with open(os.path.join('..', 'results', null_scenario_name, filename), 'rb') as file:
-            results[imputation_technique] = pickle.load(file)
+        try:
+            with open(os.path.join('..', 'results', null_scenario_name, filename), 'rb') as file:
+                results[imputation_technique] = pickle.load(file)
+        except Exception as err:
+            print(err)
 
     y_metrics = ['SPD_Race', 'SPD_Sex', 'SPD_Race_Sex', 'EO_Race', 'EO_Sex', 'EO_Race_Sex']
     x_metrics = ['Label_stability', 'Accuracy', 'SD']
