@@ -90,25 +90,31 @@ def base_regressor(column_type):
     else:
         raise ValueError(
                 "Can only support numerical or categorical columns, got column_type={0}".format(column_type))
-        model = None
     return model
 
 
 def base_knn(column_type, n_neighbors):
     if column_type == 'numerical':
-        # model = KNeighborsRegressor(n_neighbors=n_neighbors)
-        model = RandomForestRegressor(n_estimators = 100, max_depth = 20, random_state = SEED)
+        model = KNeighborsRegressor(n_neighbors=n_neighbors)
     elif column_type == 'categorical':
-        # model = KNeighborsClassifier(n_neighbors=n_neighbors)
-        model = RandomForestClassifier(n_estimators = 100,
-                                       max_depth=30,
-                                       random_state = SEED,
-                                       class_weight='balanced_subsample',
-                                       min_samples_leaf=5,
-                                       oob_score=True)
-        # model = BalancedRandomForestClassifier(n_estimators = 100, random_state = SEED)
+        model = KNeighborsClassifier(n_neighbors=n_neighbors)
     else:
         raise ValueError(
                 "Can only support numerical or categorical columns, got column_type={0}".format(column_type))
-        model = None
+    return model
+
+
+def base_random_forest(column_type, n_estimators, max_depth, class_weight=None, min_samples_leaf=None, oob_score=None):
+    if column_type == 'numerical':
+        model = RandomForestRegressor(n_estimators = n_estimators, max_depth = max_depth, random_state = SEED)
+    elif column_type == 'categorical':
+        model = RandomForestClassifier(n_estimators=n_estimators,
+                                       max_depth=max_depth,
+                                       random_state = SEED,
+                                       class_weight=class_weight,
+                                       min_samples_leaf=min_samples_leaf,
+                                       oob_score=oob_score)
+    else:
+        raise ValueError(
+            "Can only support numerical or categorical columns, got column_type={0}".format(column_type))
     return model

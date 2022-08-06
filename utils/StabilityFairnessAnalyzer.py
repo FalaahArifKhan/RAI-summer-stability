@@ -3,18 +3,24 @@ import pickle
 import numpy as np
 import pandas as pd
 
-from matplotlib import pyplot as plt
-from sklearn.tree import DecisionTreeClassifier
-
 from config import BOOTSTRAP_FRACTION, DATASET_CONFIG
 from utils.EDA_utils import plot_generic
-from utils.analysis_helper import load_groups_of_interest, compute_metric
+from utils.analysis_helper import compute_metric
 from utils.stability_analysis import count_prediction_stats, get_per_sample_accuracy, generate_bootstrap
 
 
 class StabilityFairnessAnalyzer:
     def __init__(self, X_data_tpl, y_data_tpl, test_groups, evaluation_model, imputation_technique,
                  null_scenario_name, n_estimators=200):
+        """
+        :param X_data_tpl: a tuple of X_train_features and X_test_features; used to fit and test evaluation_model
+        :param y_data_tpl: a tuple of y_train and y_test; used for evaluation_model
+        :param test_groups: advantage and disadvantage groups to measure fairness metrics
+        :param evaluation_model: the best model for the dataset; fairness and stability metrics will be measure for it
+        :param imputation_technique: a name of imputation technique to name result .pkl file with metrics
+        :param null_scenario_name: a name of null simulation method; just used to name a result .pkl file
+        :param n_estimators: a number of estimators in ensemble to measure evaluation_model stability
+        """
         self.imputation_technique = imputation_technique
         self.n_estimators = n_estimators
         self.null_scenario_name = null_scenario_name
@@ -27,6 +33,11 @@ class StabilityFairnessAnalyzer:
         self.test_groups = test_groups
 
     def measure_metrics(self, make_plots=True):
+        """
+        Measure metrics for the evaluation model. Display plots for analysis if needed. Save results to a .pkl file
+
+        :param make_plots: bool, if display plots for analysis
+        """
         # For computing fairness-related metrics
         boostrap_size = int(BOOTSTRAP_FRACTION * self.X_train_imputed.shape[0])
 
@@ -56,9 +67,9 @@ class StabilityFairnessAnalyzer:
         self.save_metrics_to_file(stds, iqr, accuracy, label_stability, fairness_metrics)
 
     def UQ_by_boostrap(self, n_estimators, boostrap_size, with_replacement=True, verbose=True):
-        '''
-        Quantifying uncertainty of predictive model by constructing an ensemble from boostrapped samples
-        '''
+        """
+        Quantifying uncertainty of predictive model by constructing an ensemble from bootstrapped samples
+        """
         predictions = {}
         ensemble = {}
 

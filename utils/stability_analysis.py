@@ -3,6 +3,7 @@ import pickle
 import numpy as np
 import pandas as pd
 import scipy as sp
+import seaborn as sns
 
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
@@ -204,6 +205,7 @@ def save_uncertainty_results_to_file(null_scenario_name, imputation_technique, s
 
 
 def display_result_plots(null_scenario_name, imputation_techniques):
+    sns.set_style("darkgrid")
     results = dict()
     for imputation_technique in imputation_techniques:
         filename = f"{DATASET_CONFIG['state'][0]}_{DATASET_CONFIG['year']}_{null_scenario_name}_{imputation_technique.replace('-', '_')}.pkl"
