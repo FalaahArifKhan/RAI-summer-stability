@@ -4,6 +4,7 @@ from scipy import stats
 from sklearn.preprocessing import OneHotEncoder, StandardScaler, LabelEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
+from sklearn.metrics import mean_absolute_percentage_error, mean_absolute_error, mean_squared_error, accuracy_score, f1_score
 
 from utils.null_helpers import *
 
@@ -37,17 +38,23 @@ class NullPredictor():
 
             # Binarizing categorical targets before fitting
             if self.target_transformer[col] != None:
-                y = self.target_transformer[col].fit_transform(data[col])
+                print('data[col].unique(): ', data[col].unique())
+                self.y = self.target_transformer[col].fit_transform(data[col])
+                print('self.y.unique(): ', self.y[:50])
             else:
-                y = data[col]
+                self.y = data[col]
 
-            encoder = ColumnTransformer(transformers=[
-                ('categorical_features', OneHotEncoder(handle_unknown='ignore', sparse=False), self.categorical_columns),
-                ('numerical_features', StandardScaler(), self.numerical_columns)])
-            pipeline = Pipeline([('features', encoder), ('learner', self.base_model[col])])
+            # encoder = ColumnTransformer(transformers=[
+            #     ('categorical_features', OneHotEncoder(handle_unknown='ignore', sparse=False), self.categorical_columns),
+            #     # ('numerical_features', StandardScaler(), self.numerical_columns)
+            # ])
+            # pipeline = Pipeline([('features', encoder), ('learner', self.base_model[col])])
+            pipeline = Pipeline([('learner', self.base_model[col])])
             # print(col, self.base_model[col])
 
-            model = pipeline.fit(X, y)
+            print('X train shape: ', X.shape)
+            model = pipeline.fit(X, self.y)
+            print("Fit score: ", pipeline.score(X, self.y))
             self.fitted_model[col] = model
 
     def transform(self, X, y=None):
@@ -62,12 +69,33 @@ class NullPredictor():
             null_idx = np.where(data[col].isnull())[0]
             # print("Transforming ", len(null_idx), " nulls")
             X_test = data[self.input_columns].iloc[null_idx]
+            print('X X_test shape: ', X_test.shape)
+            # y_test = data[col][data[col].isnull()]
 
+            # X_test = self.encoder.transform(X_test)
+            # print('X_test.head(): ', X_test.head())
             predicted = self.fitted_model[col].predict(X_test)
 
             # Inverse transforming binary targets back into categories
             if self.target_transformer[col] != None:
                 predicted = self.target_transformer[col].inverse_transform(predicted)
+                print('Inverse transform for predicted values')
+
+            print('unique predicted: ', np.unique(predicted))
+            if isinstance(y, pd.Series):
+                try:
+                    print('X_test.shape: ', X_test.shape)
+                    print('y.shape: ', y.shape)
+                    print("Prediction score1: ", self.fitted_model[col].score(X_test, y))
+                    if self.target_transformer[col]:
+                        print("Prediction accuracy score: ", accuracy_score(y, predicted.round()))
+                        print("Prediction f1 score: ", f1_score(y, predicted.round(), average='macro'))
+                    else:
+                        print("Prediction RMSE score: ", mean_squared_error(y, predicted.round(), squared=False))
+                        print("Prediction MAE score: ", mean_absolute_error(y, predicted.round()))
+                except Exception as err:
+                    print(err)
+            # print("Predicted: ", predicted)
 
             # data[col].iloc[null_idx] = predicted.astype('int')
             data[col].iloc[null_idx] = predicted

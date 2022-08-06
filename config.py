@@ -1,3 +1,4 @@
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from xgboost import XGBClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -19,34 +20,49 @@ COLUMN_TO_TYPE = {
 }
 
 MODELS_CONFIG = [
+    # {
+    #     'model_name': 'LogisticRegression',
+    #     'model': LogisticRegression(random_state=SEED),
+    #     'params': {
+    #         'penalty': ['none', 'l2'],
+    #         'solver': ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'],
+    #         'max_iter': range(50, 251, 50),
+    #     }
+    # },
+    # {
+    #     'model_name': 'DecisionTreeClassifier',
+    #     'model': DecisionTreeClassifier(random_state=SEED),
+    #     'params': {
+    #         # "max_depth": [2, 3, 4, 6, 10],
+    #         "max_depth": [5, 10, 20],
+    #         "max_features": [0.6, 'sqrt'],
+    #         "criterion": ["gini", "entropy"]
+    #     }
+    # },
     {
-        'model_name': 'LogisticRegression',
-        'model': LogisticRegression(random_state=SEED),
+        'model_name': 'RandomForestClassifier',
+        'model': RandomForestClassifier(random_state=SEED),
         'params': {
-            'penalty': ['none', 'l2'],
-            'solver': ['newton-cg', 'lbfgs', 'liblinear', 'sag', 'saga'],
-            'max_iter': range(50, 251, 50),
+            "bootstrap": [True],
+            # "max_depth": [30],
+            "n_estimators": [100],
+            "class_weight": ['balanced_subsample'],
+            "max_features": ['auto']
         }
     },
-    {
-        'model_name': 'DecisionTreeClassifier',
-        'model': DecisionTreeClassifier(random_state=SEED),
-        'params': {
-            "max_depth": [2, 3, 4, 6, 10],
-            "max_features": [0.6, 'sqrt'],
-            "criterion": ["gini", "entropy"]
-        }
-    },
-    {
-        'model_name': 'XGBClassifier',
-        'model': XGBClassifier(random_state=SEED, verbosity = 0),
-        'params': {
-            'learning_rate': [0.1],
-            'n_estimators': [200, 300],
-            'max_depth': range(3, 10, 2),
-            'objective':  ['binary:logistic'],
-        }
-    }
+    # {
+    #     'model_name': 'XGBClassifier',
+    #     'model': XGBClassifier(random_state=SEED, verbosity = 0),
+    #     'params': {
+    #         'learning_rate': [0.1],
+    #         # 'n_estimators': [200, 300],
+    #         'n_estimators': [100],
+    #         'scale_pos_weight': [99],
+    #         # 'max_depth': range(5, 16, 5),
+    #         'max_depth': [10],
+    #         'objective':  ['binary:logistic'],
+    #     }
+    # }
 ]
 
 # Config with simulated scenarios
@@ -56,7 +72,7 @@ SIMULATED_SCENARIOS_DICT = {
         'special_values': [2, 3, 4],
         'condition_col': 'MAR',
         'target_col': 'MAR',
-        'fraction': 0.3
+        'fraction': 0.2
     },
     # "Not Applicable" Type of Nulls
     # 'Not_Applicable_MIL': {

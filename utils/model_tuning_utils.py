@@ -147,6 +147,7 @@ def test_ML_models(best_results_df, config_models, n_folds, samples_per_fold,
     idx = 0
     # find the best model among defined in config_models
     for model_config in config_models:
+        print(f"Tuning {model_config['model_name']}...")
         cur_model, cur_f1_score, cur_accuracy, cur_params = validate_model(deepcopy(model_config['model']),
                                                                            X_train, y_train, model_config['params'],
                                                                            n_folds, samples_per_fold)

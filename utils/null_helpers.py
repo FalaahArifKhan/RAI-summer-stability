@@ -1,8 +1,12 @@
 import pandas as pd
 import numpy as np
 from scipy import stats
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+from imblearn.ensemble import BalancedRandomForestClassifier
 from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
 from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
+
+from config import SEED
 
 
 def nulls_simulator(data, target_col, condition_col, special_values, fraction, nan_value=np.nan):
@@ -32,6 +36,7 @@ def nulls_simulator(data, target_col, condition_col, special_values, fraction, n
     corrupted_data.loc[rows, [target_col]] = nan_value
     corrupted_data = pd.concat([corrupted_data, data[~data[condition_col].isin(special_values)]], axis=0)
     return corrupted_data
+
 
 def get_sample_rows(data, target_col, fraction):
     """
@@ -63,6 +68,7 @@ def decide_special_category(data):
         print("Data is not numerical, assigning string category")
         return data_type("Special")
 
+
 def find_column_mode(data):
     result = stats.mode(data)
     return result.mode[0]
@@ -90,9 +96,17 @@ def base_regressor(column_type):
 
 def base_knn(column_type, n_neighbors):
     if column_type == 'numerical':
-        model = KNeighborsRegressor(n_neighbors=n_neighbors)
+        # model = KNeighborsRegressor(n_neighbors=n_neighbors)
+        model = RandomForestRegressor(n_estimators = 100, max_depth = 20, random_state = SEED)
     elif column_type == 'categorical':
-        model = KNeighborsClassifier(n_neighbors=n_neighbors)
+        # model = KNeighborsClassifier(n_neighbors=n_neighbors)
+        model = RandomForestClassifier(n_estimators = 100,
+                                       max_depth=30,
+                                       random_state = SEED,
+                                       class_weight='balanced_subsample',
+                                       min_samples_leaf=5,
+                                       oob_score=True)
+        # model = BalancedRandomForestClassifier(n_estimators = 100, random_state = SEED)
     else:
         raise ValueError(
                 "Can only support numerical or categorical columns, got column_type={0}".format(column_type))
