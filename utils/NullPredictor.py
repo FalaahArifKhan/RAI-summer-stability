@@ -69,7 +69,9 @@ class NullPredictor():
             if self.target_transformer[col] != None:
                 predicted = self.target_transformer[col].inverse_transform(predicted)
 
-            data[col].iloc[null_idx] = predicted.astype('int')
+            # data[col].iloc[null_idx] = predicted.astype('int')
+            data[col].iloc[null_idx] = predicted
+            data[col] = data[col].astype(int)
 
         return data
 

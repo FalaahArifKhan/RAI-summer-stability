@@ -77,24 +77,24 @@ def find_column_median(data):
 
 
 def base_regressor(column_type):
-        if column_type == 'numerical':
-            model = LinearRegression()
-        elif column_type == 'categorical':
-            model = LogisticRegression()
-        else:
-            raise ValueError(
-                    "Can only support numerical or categorical columns, got column_type={0}".format(column_type))
-            model = None
-        return model
+    if column_type == 'numerical':
+        model = LinearRegression()
+    elif column_type == 'categorical':
+        model = LogisticRegression()
+    else:
+        raise ValueError(
+                "Can only support numerical or categorical columns, got column_type={0}".format(column_type))
+        model = None
+    return model
 
 
 def base_knn(column_type, n_neighbors):
-        if column_type == 'numerical':
-            model = KNeighborsRegressor(n_neighbors=n_neighbors)
-        elif column_type == 'categorical':
-            model = KNeighborsClassifier(n_neighbors=n_neighbors)
-        else:
-            raise ValueError(
-                    "Can only support numerical or categorical columns, got column_type={0}".format(column_type))
-            model = None
-        return model
+    if column_type == 'numerical':
+        model = KNeighborsRegressor(n_neighbors=n_neighbors)
+    elif column_type == 'categorical':
+        model = KNeighborsClassifier(n_neighbors=n_neighbors)
+    else:
+        raise ValueError(
+                "Can only support numerical or categorical columns, got column_type={0}".format(column_type))
+        model = None
+    return model

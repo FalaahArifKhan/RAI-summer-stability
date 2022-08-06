@@ -94,7 +94,7 @@ SIMULATED_SCENARIOS_DICT = {
         'special_values': (8, 10, 11, 12, 15),
         'condition_col': 'RELP',
         'target_col': 'AGEP',
-        'fraction': 0.3
+        'fraction': 0.2
     },
     # 'Unknown_NATIVITY': {
     #     'special_values': (11, 12, 15),
